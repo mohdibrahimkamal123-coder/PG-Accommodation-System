@@ -1,0 +1,55 @@
+
+package com.Project.SmartStay.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import jakarta.validation.Valid;
+
+import com.Project.SmartStay.entity.User;
+import com.Project.SmartStay.service.UserService;
+
+@RestController
+@RequestMapping("/api/users")
+@CrossOrigin(origins = "http://localhost:5173")
+public class UserController {
+
+    @Autowired
+    private UserService userService;
+
+    // Register User
+    @PostMapping("/register")
+    public User registerUser(@Valid @RequestBody User user) {
+        return userService.registerUser(user);
+    }
+
+    // Get All Users
+    @GetMapping
+    public List<User> getAllUsers() {
+        return userService.getAllUsers();
+    }
+
+    // Get User By Id
+    @GetMapping("/{id}")
+    public User getUserById(@PathVariable Long id) {
+        return userService.getUserById(id);
+    }
+
+    // Update User
+    @PutMapping("/{id}")
+    public User updateUser(@PathVariable Long id,
+                            @RequestBody User user) {
+        return userService.updateUser(id, user);
+    }
+
+    // Delete User
+    @DeleteMapping("/{id}")
+    public String deleteUser(@PathVariable Long id) {
+
+        userService.deleteUser(id);
+
+        return "User deleted successfully.";
+    }
+}
