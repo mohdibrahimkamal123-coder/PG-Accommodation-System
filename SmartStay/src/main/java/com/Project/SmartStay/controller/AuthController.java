@@ -57,9 +57,10 @@ public class AuthController {
 
         return new OwnerLoginResponse(
                 owner.getOwnerId(),
-                owner.getOwnerName(),
+                owner.getFullName(),
                 owner.getEmail(),
-                owner.getRole()
+                owner.getMobileNumber(),
+                "Login Successfull"
         );
     }
 }
