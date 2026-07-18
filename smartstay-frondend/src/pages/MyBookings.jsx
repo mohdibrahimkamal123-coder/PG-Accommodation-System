@@ -13,7 +13,7 @@ function MyBookings() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchBookings();
+    fetchBookings();  
   }, []);
 
   const fetchBookings = async () => {

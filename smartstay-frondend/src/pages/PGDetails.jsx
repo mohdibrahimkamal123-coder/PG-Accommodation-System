@@ -1,47 +1,94 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
+
 import Navbar from "../components/Navbar";
+
 import { getPgById } from "../services/pgService";
+import { getRoomsByPgId } from "../services/roomService";
+import { bookRoom } from "../services/bookingService";
+
+import { useAuth } from "../context/AuthContext";
 
 function PgDetails() {
 
     const { id } = useParams();
 
+    const navigate = useNavigate();
+
+    const { user, isAuthenticated } = useAuth();
+
     const [pg, setPg] = useState(null);
+    const [rooms, setRooms] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        loadData();
+    }, [id]);
 
-        loadPg();
-
-    }, []);
-
-    const loadPg = async () => {
+    const loadData = async () => {
 
         try {
 
-            const response = await getPgById(id);
+            const pgResponse = await getPgById(id);
+            setPg(pgResponse.data);
 
-            setPg(response.data);
+            const roomResponse = await getRoomsByPgId(id);
+            setRooms(roomResponse.data);
 
-        }
-        catch (error) {
+        } catch (error) {
 
-            console.error(error);
+            console.error("Error loading PG details:", error);
 
-        }
-        finally {
+        } finally {
 
             setLoading(false);
 
         }
+    };
 
+    const handleBooking = async (room) => {
+
+        if (!isAuthenticated) {
+
+            alert("Please login to book a room.");
+
+            navigate("/login");
+
+            return;
+        }
+
+        try {
+
+            const bookingData = {
+
+                userId: user.userId,
+
+                roomId: room.roomId,
+
+                status: "CONFIRMED"
+
+            };
+
+            await bookRoom(bookingData);
+
+            alert("Booking Successful!");
+
+            navigate("/bookings");
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert(
+                error.response?.data?.message ||
+                "Booking Failed"
+            );
+        }
     };
 
     if (loading) {
 
         return (
-
             <>
                 <Navbar />
 
@@ -50,19 +97,15 @@ function PgDetails() {
                     <div
                         className="spinner-border text-primary"
                         role="status"
-                    >
-                    </div>
+                    ></div>
 
                     <p className="mt-3">
                         Loading PG Details...
                     </p>
 
                 </div>
-
             </>
-
         );
-
     }
 
     if (!pg) {
@@ -86,9 +129,7 @@ function PgDetails() {
                 </div>
 
             </>
-
         );
-
     }
 
     return (
@@ -141,14 +182,11 @@ function PgDetails() {
 
                         <ul>
 
-                            {pg.wifiAvailable &&
-                                <li>📶 WiFi</li>}
+                            {pg.wifiAvailable && <li>📶 WiFi</li>}
 
-                            {pg.foodAvailable &&
-                                <li>🍴 Food</li>}
+                            {pg.foodAvailable && <li>🍴 Food</li>}
 
-                            {pg.laundryAvailable &&
-                                <li>🧺 Laundry</li>}
+                            {pg.laundryAvailable && <li>🧺 Laundry</li>}
 
                         </ul>
 
@@ -160,21 +198,131 @@ function PgDetails() {
 
                             {pg.address},
 
+                            {" "}
+
                             {pg.city},
+
+                            {" "}
 
                             {pg.state}
 
-                            -
+                            {" - "}
 
                             {pg.pincode}
 
                         </p>
 
-                        <button
-                            className="btn btn-success btn-lg"
-                        >
-                            Book Now
-                        </button>
+                        <hr />
+
+                        <h3 className="mb-4">
+                            Available Rooms
+                        </h3>
+
+                        {
+                            rooms.length === 0 ? (
+
+                                <div className="alert alert-warning">
+
+                                    No Rooms Available
+
+                                </div>
+
+                            ) : (
+
+                                <div className="row">
+
+                                    {
+
+                                        rooms.map((room) => (
+
+                                            <div
+                                                className="col-md-4 mb-4"
+                                                key={room.roomId}
+                                            >
+
+                                                <div className="card h-100 shadow-sm">
+
+                                                    <div className="card-body">
+
+                                                        <h5 className="card-title">
+
+                                                            {room.roomType}
+
+                                                        </h5>
+
+                                                        <p>
+
+                                                            <strong>Capacity:</strong>
+
+                                                            {" "}
+
+                                                            {room.capacity}
+
+                                                        </p>
+
+                                                        <p>
+
+                                                            <strong>Available Beds:</strong>
+
+                                                            {" "}
+
+                                                            {room.availableBeds}
+
+                                                        </p>
+
+                                                        <p>
+
+                                                            <strong>Rent:</strong>
+
+                                                            {" "}
+
+                                                            ₹{room.rent}/month
+
+                                                        </p>
+
+                                                    </div>
+
+                                                    <div className="card-footer bg-white border-0">
+
+                                                        {
+
+                                                            room.availableBeds > 0 ? (
+
+                                                                <button
+                                                                    className="btn btn-success w-100"
+                                                                    onClick={() => handleBooking(room)}
+                                                                >
+                                                                    Book Now
+                                                                </button>
+
+                                                            ) : (
+
+                                                                <button
+                                                                    className="btn btn-secondary w-100"
+                                                                    disabled
+                                                                >
+                                                                    Fully Occupied
+                                                                </button>
+
+                                                            )
+
+                                                        }
+
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
+
+                                        ))
+
+                                    }
+
+                                </div>
+
+                            )
+
+                        }
 
                     </div>
 
