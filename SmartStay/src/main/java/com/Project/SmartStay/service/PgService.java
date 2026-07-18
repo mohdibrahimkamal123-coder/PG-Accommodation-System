@@ -21,7 +21,7 @@ public class PgService {
     }
 
     // Get All PGs
-    public List<Pg> getAllPgs() {
+    public List<Pg> getAllPgs0() {
         return pgRepository.findAll();
     }
 
@@ -94,6 +94,14 @@ public class PgService {
     public List<Pg> getPgsByOwner(Long ownerId) {
 
         return pgRepository.findByOwnerId(ownerId);
+
+    }
+    public List<Pg> getAllPgs() {
+        return pgRepository.findAll();
+    }
+    public List<Pg> getAllPgs1() {
+
+        return pgRepository.findByApproved(true);
 
     }
 

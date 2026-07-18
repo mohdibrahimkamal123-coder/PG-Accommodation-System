@@ -38,6 +38,9 @@ public class Owner {
 
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
+    
+    @Column(nullable = false)
+    private Boolean approved = false;
 
     public Owner() {
     }
@@ -99,5 +102,12 @@ public class Owner {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+    public Boolean getApproved() {
+        return approved;
+    }
+
+    public void setApproved(Boolean approved) {
+        this.approved = approved;
     }
 }

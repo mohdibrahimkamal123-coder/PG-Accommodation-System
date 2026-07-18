@@ -1,6 +1,7 @@
 package com.Project.SmartStay.repository;
 
 import java.util.Optional;
+import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -20,4 +21,6 @@ public interface OwnerRepository extends JpaRepository<Owner, Long> {
 
     // Check if mobile number already exists
     boolean existsByMobileNumber(String mobileNumber);
+    
+    List<Owner> findByApproved(Boolean approved);
 }

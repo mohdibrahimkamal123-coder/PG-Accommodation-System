@@ -7,5 +7,7 @@ import com.Project.SmartStay.entity.User;
 public interface UserRepository extends JpaRepository<User, Long> {
 	
 	Optional<User> findByEmail(String email);
+	long count();
+	Optional<User> findByBlocked(Boolean blocked);
 
 }

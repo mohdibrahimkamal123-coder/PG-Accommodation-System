@@ -52,9 +52,13 @@ public class Pg {
     @NotNull(message = "WiFi Availability is required")
     @Column(name = "wifi_available")
     private Boolean wifiAvailable;
+    @Column(nullable = false)
+    private Boolean approved = false;
 
     @NotNull(message = "Laundry Availability is required")
     @Column(name = "laundry_available")
+    
+    
     private Boolean laundryAvailable;
 
     private Double rating;
@@ -164,5 +168,12 @@ public class Pg {
 
     public void setRating(Double rating) {
         this.rating = rating;
+    }
+    public Boolean getApproved() {
+        return approved;
+    }
+
+    public void setApproved(Boolean approved) {
+        this.approved = approved;
     }
 }

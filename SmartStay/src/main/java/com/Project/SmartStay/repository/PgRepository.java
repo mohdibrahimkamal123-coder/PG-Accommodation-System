@@ -14,5 +14,6 @@ public interface PgRepository extends JpaRepository<Pg, Long> {
     List<Pg> findByWifiAvailableTrue();
     List<Pg> findByFoodAvailableTrue();
     List<Pg> findByOwnerId(Long ownerId);
+    List<Pg> findByApproved(Boolean approved);
 
 }

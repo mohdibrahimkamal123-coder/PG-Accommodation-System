@@ -52,8 +52,14 @@ public class OwnerService {
                 .orElseThrow(() ->
                         new RuntimeException("Invalid Email or Password"));
 
+        // Check Password
         if (!owner.getPassword().equals(request.getPassword())) {
             throw new RuntimeException("Invalid Email or Password");
+        }
+
+        // Check Approval Status
+        if (!owner.getApproved()) {
+            throw new RuntimeException("Your account is pending admin approval.");
         }
 
         return new OwnerLoginResponse(

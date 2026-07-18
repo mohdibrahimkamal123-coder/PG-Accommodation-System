@@ -39,6 +39,9 @@ public class User {
 
 	@NotBlank(message = "Role is required")
 	private String role;
+	
+	@Column(nullable = false)
+	private Boolean blocked = false;
 
 	
 
@@ -110,5 +113,12 @@ public class User {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+    public Boolean getBlocked() {
+        return blocked;
+    }
+
+    public void setBlocked(Boolean blocked) {
+        this.blocked = blocked;
     }
 }

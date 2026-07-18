@@ -188,34 +188,26 @@ public class BookingService {
         booking.setStatus("COMPLETED");
 
         bookingRepository.save(booking);
-
         return "Booking Completed Successfully";
     }
 
-    // ==========================
     // Convert Entity -> DTO
-    // ==========================
     private BookingResponse convertToResponse(Booking booking) {
-
         Room room = roomRepository
                 .findById(booking.getRoomId())
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Room Not Found"));
-
         Pg pg = pgRepository
                 .findById(room.getPgId())
                 .orElseThrow(() ->
                         new ResourceNotFoundException("PG Not Found"));
-
         return new BookingResponse(
                 booking.getBookingId(),
                 booking.getBookingDate(),
                 booking.getStatus(),
-
                 room.getRoomId(),
                 room.getRoomType(),
                 room.getRent(),
-
                 pg.getPgId(),
                 pg.getPgName(),
                 pg.getAddress(),
