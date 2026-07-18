@@ -1,47 +1,43 @@
 package com.Project.SmartStay.controller;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import com.Project.SmartStay.entity.Owner;
+import com.Project.SmartStay.dto.OwnerLoginRequest;
+import com.Project.SmartStay.dto.OwnerLoginResponse;
+import com.Project.SmartStay.dto.OwnerRegisterRequest;
 import com.Project.SmartStay.service.OwnerService;
 
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/owners")
+@CrossOrigin(origins = "http://localhost:5173")
 public class OwnerController {
 
     @Autowired
     private OwnerService ownerService;
 
+    // ==========================
+    // Register Owner
+    // POST: /api/owners/register
+    // ==========================
     @PostMapping("/register")
-    public Owner registerOwner(@Valid @RequestBody Owner owner) {
-        return ownerService.registerOwner(owner);
+    public String registerOwner(
+            @Valid @RequestBody OwnerRegisterRequest request) {
+
+        return ownerService.registerOwner(request);
     }
 
-    @GetMapping
-    public List<Owner> getAllOwners() {
-        return ownerService.getAllOwners();
+    // ==========================
+    // Login Owner
+    // POST: /api/owners/login
+    // ==========================
+    @PostMapping("/login")
+    public OwnerLoginResponse loginOwner(
+            @Valid @RequestBody OwnerLoginRequest request) {
+
+        return ownerService.loginOwner(request);
     }
 
-    @GetMapping("/{id}")
-    public Owner getOwnerById(@PathVariable Long id) {
-        return ownerService.getOwnerById(id);
-    }
-    
-    @PutMapping("/{id}")
-    public Owner updateOwner(@PathVariable Long id,
-    		@Valid @RequestBody Owner owner) {
-
-        return ownerService.updateOwner(id, owner);
-    }
-    
-    @DeleteMapping("/{id}")
-    public String deleteOwner(@PathVariable Long id) {
-
-        return ownerService.deleteOwner(id);
-    }
 }

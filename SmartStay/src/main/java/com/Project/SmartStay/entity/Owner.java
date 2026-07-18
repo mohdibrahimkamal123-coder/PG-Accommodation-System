@@ -17,32 +17,40 @@ public class Owner {
     @Column(name = "owner_id")
     private Long ownerId;
 
-    @Column(name = "owner_name")
-    @NotBlank(message = "Owner Name is required")
-    private String ownerName;
+    @NotBlank(message = "Full Name is required")
+    @Column(name = "full_name", nullable = false)
+    private String fullName;
 
     @NotBlank(message = "Email is required")
-    @Email(message = "Please enter a valid email address")
+    @Email(message = "Invalid Email")
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
+    @NotBlank(message = "Mobile Number is required")
+    @Pattern(regexp = "^[6-9]\\d{9}$", message = "Invalid Mobile Number")
+    @Column(name = "mobile_number", nullable = false, unique = true)
+    private String mobileNumber;
+
     @NotBlank(message = "Password is required")
-    @Size(min = 6, max = 20, message = "Password must be between 6 and 20 characters")
+    @Size(min = 6, message = "Password must contain at least 6 characters")
+    @Column(name = "password", nullable = false)
     private String password;
 
-    @NotBlank(message = "Phone Number is required")
-    @Pattern(regexp = "^[0-9]{10}$",
-            message = "Phone Number must contain exactly 10 digits")
-    private String phone;
-
-    @Column(name = "created_at",
-            insertable = false,
-            updatable = false)
+    @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @NotBlank(message = "Role is required")
-    private String role;
-
     public Owner() {
+    }
+
+    public Owner(Long ownerId, String fullName, String email,
+                 String mobileNumber, String password,
+                 LocalDateTime createdAt) {
+        this.ownerId = ownerId;
+        this.fullName = fullName;
+        this.email = email;
+        this.mobileNumber = mobileNumber;
+        this.password = password;
+        this.createdAt = createdAt;
     }
 
     public Long getOwnerId() {
@@ -53,12 +61,12 @@ public class Owner {
         this.ownerId = ownerId;
     }
 
-    public String getOwnerName() {
-        return ownerName;
+    public String getFullName() {
+        return fullName;
     }
 
-    public void setOwnerName(String ownerName) {
-        this.ownerName = ownerName;
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
 
     public String getEmail() {
@@ -69,6 +77,14 @@ public class Owner {
         this.email = email;
     }
 
+    public String getMobileNumber() {
+        return mobileNumber;
+    }
+
+    public void setMobileNumber(String mobileNumber) {
+        this.mobileNumber = mobileNumber;
+    }
+
     public String getPassword() {
         return password;
     }
@@ -77,27 +93,11 @@ public class Owner {
         this.password = password;
     }
 
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
     }
 }
