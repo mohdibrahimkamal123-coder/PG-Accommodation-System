@@ -3,9 +3,12 @@ package com.Project.SmartStay.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import com.Project.SmartStay.dto.ChangePasswordRequest;
 import com.Project.SmartStay.dto.OwnerLoginRequest;
 import com.Project.SmartStay.dto.OwnerLoginResponse;
+import com.Project.SmartStay.dto.OwnerProfileResponse;
 import com.Project.SmartStay.dto.OwnerRegisterRequest;
+import com.Project.SmartStay.dto.OwnerUpdateRequest;
 import com.Project.SmartStay.service.OwnerService;
 
 import jakarta.validation.Valid;
@@ -20,7 +23,6 @@ public class OwnerController {
 
     // ==========================
     // Register Owner
-    // POST: /api/owners/register
     // ==========================
     @PostMapping("/register")
     public String registerOwner(
@@ -31,13 +33,44 @@ public class OwnerController {
 
     // ==========================
     // Login Owner
-    // POST: /api/owners/login
     // ==========================
     @PostMapping("/login")
     public OwnerLoginResponse loginOwner(
             @Valid @RequestBody OwnerLoginRequest request) {
 
         return ownerService.loginOwner(request);
+    }
+
+    // ==========================
+    // Get Owner Profile
+    // ==========================
+    @GetMapping("/profile/{ownerId}")
+    public OwnerProfileResponse getProfile(
+            @PathVariable Long ownerId) {
+
+        return ownerService.getProfile(ownerId);
+    }
+
+    // ==========================
+    // Update Owner Profile
+    // ==========================
+    @PutMapping("/profile/{ownerId}")
+    public String updateProfile(
+            @PathVariable Long ownerId,
+            @Valid @RequestBody OwnerUpdateRequest request) {
+
+        return ownerService.updateProfile(ownerId, request);
+    }
+
+    // ==========================
+    // Change Password
+    // ==========================
+    @PutMapping("/change-password/{ownerId}")
+    public String changePassword(
+            @PathVariable Long ownerId,
+            @Valid @RequestBody ChangePasswordRequest request) {
+
+        return ownerService.changePassword(ownerId, request);
     }
 
 }

@@ -9,6 +9,8 @@ import com.Project.SmartStay.entity.Owner;
 
 @Repository
 public interface OwnerRepository extends JpaRepository<Owner, Long> {
+	
+	Optional<Owner> findById(Long ownerId);
 
     // Find owner by email (used for login)
     Optional<Owner> findByEmail(String email);
