@@ -1,5 +1,6 @@
 package com.Project.SmartStay.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,7 +29,9 @@ public class BookingService {
     @Autowired
     private PgRepository pgRepository;
 
+    // ==========================
     // Book Room
+    // ==========================
     public Booking bookRoom(Booking booking) {
 
         Room room = roomRepository
@@ -46,7 +49,9 @@ public class BookingService {
         return bookingRepository.save(booking);
     }
 
+    // ==========================
     // Get User Bookings
+    // ==========================
     public List<BookingResponse> getBookingsByUser(Long userId) {
 
         List<Booking> bookings = bookingRepository.findByUserId(userId);
@@ -56,7 +61,9 @@ public class BookingService {
                 .collect(Collectors.toList());
     }
 
+    // ==========================
     // Cancel Booking
+    // ==========================
     public String cancelBooking(Long bookingId) {
 
         Booking booking = bookingRepository
@@ -78,12 +85,16 @@ public class BookingService {
         return "Booking Cancelled Successfully";
     }
 
+    // ==========================
     // Admin
+    // ==========================
     public List<Booking> getAllBookings() {
         return bookingRepository.findAll();
     }
 
+    // ==========================
     // Get Booking By Id
+    // ==========================
     public BookingResponse getBookingById(Long bookingId) {
 
         Booking booking = bookingRepository
@@ -94,7 +105,96 @@ public class BookingService {
         return convertToResponse(booking);
     }
 
+    // =====================================================
+    // OWNER : Get All Bookings of Owner
+    // =====================================================
+    public List<BookingResponse> getBookingsByOwner(Long ownerId) {
+
+        List<Pg> ownerPgs = pgRepository.findByOwnerId(ownerId);
+
+        List<BookingResponse> responses = new ArrayList<>();
+
+        for (Pg pg : ownerPgs) {
+
+            List<Room> rooms = roomRepository.findByPgId(pg.getPgId());
+
+            for (Room room : rooms) {
+
+                List<Booking> bookings =
+                        bookingRepository.findByRoomId(room.getRoomId());
+
+                for (Booking booking : bookings) {
+                    responses.add(convertToResponse(booking));
+                }
+            }
+        }
+
+        return responses;
+    }
+
+    // =====================================================
+    // OWNER : Get Booking By Id
+    // =====================================================
+    public BookingResponse getOwnerBookingById(Long bookingId) {
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Booking Not Found"));
+
+        return convertToResponse(booking);
+    }
+
+    // =====================================================
+    // OWNER : Approve Booking
+    // =====================================================
+    public String approveBooking(Long bookingId) {
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Booking Not Found"));
+
+        booking.setStatus("APPROVED");
+
+        bookingRepository.save(booking);
+
+        return "Booking Approved Successfully";
+    }
+
+    // =====================================================
+    // OWNER : Reject Booking
+    // =====================================================
+    public String rejectBooking(Long bookingId) {
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Booking Not Found"));
+
+        booking.setStatus("REJECTED");
+
+        bookingRepository.save(booking);
+
+        return "Booking Rejected Successfully";
+    }
+
+    // =====================================================
+    // OWNER : Complete Booking
+    // =====================================================
+    public String completeBooking(Long bookingId) {
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Booking Not Found"));
+
+        booking.setStatus("COMPLETED");
+
+        bookingRepository.save(booking);
+
+        return "Booking Completed Successfully";
+    }
+
+    // ==========================
     // Convert Entity -> DTO
+    // ==========================
     private BookingResponse convertToResponse(Booking booking) {
 
         Room room = roomRepository
@@ -123,4 +223,5 @@ public class BookingService {
                 pg.getState()
         );
     }
+
 }

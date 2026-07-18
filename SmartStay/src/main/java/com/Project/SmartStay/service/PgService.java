@@ -90,5 +90,11 @@ public class PgService {
     public List<Pg> getFoodPgs() {
         return pgRepository.findByFoodAvailableTrue();
     }
+ // Get All PGs of Owner
+    public List<Pg> getPgsByOwner(Long ownerId) {
+
+        return pgRepository.findByOwnerId(ownerId);
+
+    }
 
 }	

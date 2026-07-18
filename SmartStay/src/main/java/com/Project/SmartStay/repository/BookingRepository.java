@@ -8,5 +8,6 @@ import com.Project.SmartStay.entity.Booking;
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 	
 	List<Booking> findByUserId(Long userId);
+	List<Booking> findByRoomId(Long roomId);
 
 }

@@ -56,6 +56,14 @@ public class RoomService {
 
         return "Room Deleted Successfully";
     }
+    // Get Room By Id
+    public Room getRoomById(Long roomId) {
+
+        return roomRepository.findById(roomId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Room Not Found"));
+
+    }
 
     // Get Available Rooms
     public List<Room> getAvailableRooms() {
