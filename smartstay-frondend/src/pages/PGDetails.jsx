@@ -1,33 +1,92 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 
-const PGDetails = () => {
-  const { id } = useParams();
-  const [favorite, setFavorite] = useState(false);
+import Navbar from "../components/Navbar";
 
-  // Mock static data lookup for demo
-  const property = {
-    title: 'Indiranagar Smart Residency',
-    location: 'Indiranagar, Bengaluru, Karnataka - 560038',
-    price: 11500,
-    priceLabel: '₹11,500',
-    rating: '4.9',
-    reviewsCount: '48 reviews',
-    image: 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=1200&q=80',
-    description: 'A gorgeous, light-filled studio loft designed specifically for remote developers and digital creators. Located in the heart of Indiranagar, this space features sleek custom design, private workspaces, high-speed fiber internet backup, and a curated co-living community of builders.',
-    amenities: [
-      { name: '100 Mbps Wi-Fi Backup', icon: '📶' },
-      { name: 'Split AC', icon: '❄️' },
-      { name: 'Curated Kitchenette', icon: '🍳' },
-      { name: 'Bi-Weekly Cleaning', icon: '🧹' },
-      { name: '24/7 Security Gate', icon: '🛡️' },
-      { name: 'Split Billing Portal', icon: '💳' }
-    ],
-    reviews: [
-      { name: 'Sarah Fernandes', title: 'Senior Android Developer', review: 'Absolutely love the workspace setups here. Super quiet and the high-speed fiber has robust battery backup. Highly recommended!', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80' },
-      { name: 'David K.', title: 'Finance Lead', review: 'Top notch service and verified transparency. Split billing with flatmates is automated.', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80' }
-    ]
-  };
+import { getPgById } from "../services/pgService";
+import { getRoomsByPgId } from "../services/roomService";
+import { bookRoom } from "../services/bookingService";
+
+import { useAuth } from "../context/AuthContext";
+
+function PgDetails() {
+
+    const { id } = useParams();
+
+    const navigate = useNavigate();
+
+    const { user, isAuthenticated } = useAuth();
+
+    const [pg, setPg] = useState(null);
+    const [rooms, setRooms] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        loadData();
+    }, [id]);
+
+    const loadData = async () => {
+
+        try {
+
+            const pgResponse = await getPgById(id);
+            setPg(pgResponse.data);
+
+            const roomResponse = await getRoomsByPgId(id);
+            setRooms(roomResponse.data);
+
+        } catch (error) {
+
+            console.error("Error loading PG details:", error);
+
+        } finally {
+
+            setLoading(false);
+
+        }
+    };
+
+    const handleBooking = async (room) => {
+
+        if (!isAuthenticated) {
+
+            alert("Please login to book a room.");
+
+            navigate("/login");
+
+            return;
+        }
+
+        try {
+
+            const bookingData = {
+
+                userId: user.userId,
+
+                roomId: room.roomId,
+
+                status: "CONFIRMED"
+
+            };
+
+            await bookRoom(bookingData);
+
+            alert("Booking Successful!");
+
+            navigate("/bookings");
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert(
+                error.response?.data?.message ||
+                "Booking Failed"
+            );
+        }
+    };
+
+    if (loading) {
 
   return (
     <div className="section" style={{ paddingTop: '160px', minHeight: '90vh' }}>
