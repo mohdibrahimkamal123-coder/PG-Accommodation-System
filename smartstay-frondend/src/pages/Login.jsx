@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { loginUser } from "../services/authService";
 import { Link, useNavigate } from 'react-router-dom';
 
 const Login = () => {
@@ -10,11 +11,32 @@ const Login = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault();
-    alert(`Logged in successfully with email: ${formData.email}`);
-    navigate('/dashboard'); // redirect to user dashboard
-  };
+
+    try {
+        const response = await loginUser(formData);
+
+        console.log(response);
+
+        // Save user details
+        localStorage.setItem("user", JSON.stringify(response));
+
+        alert("Login Successful");
+
+        navigate("/dashboard");
+
+    } catch (error) {
+
+        console.error(error);
+
+        if (error.response) {
+            alert(error.response.data.message || "Invalid Email or Password");
+        } else {
+            alert("Unable to connect to server");
+        }
+    }
+};
 
   return (
     <div className="section flex-center" style={{ paddingTop: '160px', minHeight: '90vh' }}>

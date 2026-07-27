@@ -14,6 +14,9 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleResourceNotFound(
             ResourceNotFoundException ex) {
+    	
+    	
+    	ex.printStackTrace(); 
 
         ErrorResponse error = new ErrorResponse(
                 false,

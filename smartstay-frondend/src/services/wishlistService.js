@@ -1,16 +1,16 @@
 import api from "./api";
 
-// Add PG to Wishlist
-export const addToWishlist = (wishlistData) => {
-  return api.post("/wishlist", wishlistData);
+export const addToWishlist = async (wishlistData) => {
+  const response = await api.post("/wishlist", wishlistData);
+  return response.data;
 };
 
-// Get User Wishlist
-export const getWishlistByUser = (userId) => {
-  return api.get(`/wishlist/user/${userId}`);
+export const getWishlist = async (userId) => {
+  const response = await api.get(`/wishlist/user/${userId}`);
+  return response.data;
 };
 
-// Remove Wishlist Item
-export const removeFromWishlist = (wishlistId) => {
-  return api.delete(`/wishlist/${wishlistId}`);
+export const removeFromWishlist = async (wishlistId) => {
+  const response = await api.delete(`/wishlist/${wishlistId}`);
+  return response.data;
 };

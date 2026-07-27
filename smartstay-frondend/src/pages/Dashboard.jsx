@@ -1,135 +1,447 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+
+import { getUserById } from "../services/userService";
+import { getUserBookings } from "../services/bookingService";
+import { getWishlist } from "../services/wishlistService";
+import { getReviewsByUser } from "../services/reviewService";
 
 const Dashboard = () => {
   const navigate = useNavigate();
 
-  const stats = [
-    { label: 'Active Leases', value: '1', icon: '🔑' },
-    { label: 'Saved Wishlist', value: '2 Stays', icon: '❤️' },
-    { label: 'KYC Status', value: 'Verified', icon: '🛡️', color: '#10B981' },
-    { label: 'Ledger Balance', value: '₹0.00', icon: '💰' }
-  ];
+  const [user, setUser] = useState(null);
+  const [bookings, setBookings] = useState([]);
+  const [wishlist, setWishlist] = useState([]);
+  const [reviews, setReviews] = useState([]);
 
-  const notifications = [
-    { id: 1, title: 'Draft Lease ready for digital signature', time: '2 hours ago', type: 'urgent' },
-    { id: 2, title: 'Welcome kit and check-in instructions shared', time: '1 day ago', type: 'info' }
-  ];
+  const [loading, setLoading] = useState(true);
 
-  const handleLogout = () => {
-    alert("Logged out successfully.");
-    navigate('/');
+  const loggedInUser = JSON.parse(localStorage.getItem("user"));
+
+  useEffect(() => {
+    if (!loggedInUser) {
+      navigate("/login");
+      return;
+    }
+
+    loadDashboard();
+  }, []);
+
+  const loadDashboard = async () => {
+    try {
+      setLoading(true);
+
+      const userId = loggedInUser.userId;
+
+      const userData = await getUserById(userId);
+      setUser(userData);
+
+      const bookingData = await getUserBookings(userId);
+      setBookings(bookingData || []);
+
+      const wishlistData = await getWishlist(userId);
+      setWishlist(wishlistData || []);
+
+      const reviewData = await getReviewsByUser(userId);
+      setReviews(reviewData || []);
+
+    } catch (err) {
+      console.error("Dashboard Error:", err);
+      alert("Unable to load dashboard.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  return (
-    <div className="section" style={{ paddingTop: '160px', minHeight: '95vh', background: 'var(--bg-color)' }}>
-      <div className="container">
-        
-        {/* Dashboard Shell Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', gap: '48px' }}>
-          
-          {/* Side Nav Widget */}
-          <div className="glass-panel" style={{ padding: '24px', borderRadius: '24px', background: '#FFFFFF', height: 'fit-content', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <h3 style={{ fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', color: 'var(--text-secondary)', padding: '0 12px 16px 12px', borderBottom: '1px solid var(--border-color)', marginBottom: '12px' }}>Resident Portal</h3>
-            
-            <Link to="/dashboard" className="btn btn-secondary" style={{ textAlign: 'left', background: 'rgba(37, 99, 235, 0.05)', color: 'var(--accent-color)', justifyContent: 'flex-start', padding: '12px 16px', fontSize: '14px' }}>📊 Dashboard</Link>
-            <Link to="/my-bookings" className="btn btn-text" style={{ textAlign: 'left', justifyContent: 'flex-start', padding: '12px 16px', fontSize: '14px', color: 'var(--text-primary)' }}>🔑 My Bookings</Link>
-            <Link to="/profile" className="btn btn-text" style={{ textAlign: 'left', justifyContent: 'flex-start', padding: '12px 16px', fontSize: '14px', color: 'var(--text-primary)' }}>👤 My Profile</Link>
-            <Link to="/my-reviews" className="btn btn-text" style={{ textAlign: 'left', justifyContent: 'flex-start', padding: '12px 16px', fontSize: '14px', color: 'var(--text-primary)' }}>★ My Reviews</Link>
-            <Link to="/change-password" className="btn btn-text" style={{ textAlign: 'left', justifyContent: 'flex-start', padding: '12px 16px', fontSize: '14px', color: 'var(--text-primary)' }}>🔒 Security</Link>
-            
-            <button 
-              onClick={handleLogout}
-              className="btn btn-text" 
-              style={{ textAlign: 'left', justifyContent: 'flex-start', padding: '12px 16px', fontSize: '14px', color: '#EF4444', borderTop: '1px solid var(--border-color)', marginTop: '24px', width: '100%' }}
-            >
-              🚪 Sign Out
-            </button>
-          </div>
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    navigate("/");
+  };
 
-          {/* Main Content Workspace */}
+  const activeBooking = bookings.find(
+    (b) => b.status === "CONFIRMED" || b.status === "ACTIVE"
+  );
+
+  if (loading) {
+    return (
+      <div className="container text-center mt-5">
+        <div className="spinner-border text-primary"></div>
+        <h5 className="mt-3">Loading Dashboard...</h5>
+      </div>
+    );
+  }
+    return (
+    <div className="container py-4">
+
+      {/* Welcome */}
+      <div className="card shadow-sm border-0 mb-4">
+        <div className="card-body d-flex justify-content-between align-items-center">
           <div>
-            {/* Header Greeting */}
-            <div style={{ marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <span className="section-tag" style={{ marginBottom: '8px' }}>Resident Console</span>
-                <h1 style={{ fontSize: '32px' }}>Welcome, John!</h1>
-              </div>
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <Link to="/find-pg" className="btn btn-primary">Book Another Stay</Link>
-              </div>
-            </div>
+            <h2 className="fw-bold">
+              Welcome, {user?.fullName}
+            </h2>
 
-            {/* Quick Metrics */}
-            <div className="grid-cols-4 grid" style={{ gap: '20px', marginBottom: '40px' }}>
-              {stats.map((s, idx) => (
-                <div key={idx} className="glass-panel" style={{ padding: '24px', borderRadius: '20px', background: '#FFFFFF' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                    <span style={{ fontSize: '24px' }}>{s.icon}</span>
-                    <span style={{ fontSize: '14px', fontWeight: '800', color: s.color || 'var(--text-primary)' }}>{s.value}</span>
-                  </div>
-                  <p style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: '600', textTransform: 'uppercase' }}>{s.label}</p>
-                </div>
-              ))}
-            </div>
-
-            {/* Active Stays & Notifications */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '32px' }}>
-              
-              {/* Active Lease Info */}
-              <div className="glass-panel" style={{ padding: '32px', borderRadius: '24px', background: '#FFFFFF' }}>
-                <h3 style={{ fontSize: '18px', marginBottom: '20px' }}>Current Stay</h3>
-                
-                <div style={{ display: 'flex', gap: '16px', marginBottom: '20px', alignItems: 'center' }}>
-                  <img 
-                    src="https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=150&q=80" 
-                    alt="" 
-                    style={{ width: '60px', height: '60px', borderRadius: '12px', objectFit: 'cover' }}
-                  />
-                  <div>
-                    <strong style={{ fontSize: '15px', color: 'var(--text-primary)', display: 'block' }}>Indiranagar Smart Residency</strong>
-                    <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Room #302-A | Indiranagar, Bengaluru</span>
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', borderTop: '1px solid var(--border-color)', paddingTop: '16px', fontSize: '13px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: 'var(--text-secondary)' }}>Rent Cycle:</span>
-                    <strong style={{ color: 'var(--text-primary)' }}>1st to 5th monthly</strong>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: 'var(--text-secondary)' }}>Lease Period:</span>
-                    <strong style={{ color: 'var(--text-primary)' }}>6 Months (Expires Dec 2026)</strong>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: 'var(--text-secondary)' }}>Payment Status:</span>
-                    <strong style={{ color: '#10B981' }}>Paid (Jul 2026)</strong>
-                  </div>
-                </div>
-              </div>
-
-              {/* Alert Notifications list */}
-              <div className="glass-panel" style={{ padding: '32px', borderRadius: '24px', background: '#FFFFFF' }}>
-                <h3 style={{ fontSize: '18px', marginBottom: '20px' }}>Inbox Notifications</h3>
-                
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  {notifications.map((n) => (
-                    <div key={n.id} style={{ padding: '16px', borderRadius: '16px', background: n.type === 'urgent' ? 'rgba(37, 99, 235, 0.04)' : 'var(--bg-color)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <strong style={{ fontSize: '13px', color: 'var(--text-primary)' }}>
-                        {n.type === 'urgent' ? '⚡ ' : '📝 '}
-                        {n.title}
-                      </strong>
-                      <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{n.time}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-            </div>
+            <p className="text-muted mb-0">
+              {user?.email}
+            </p>
           </div>
-          
+
+          <button
+            className="btn btn-danger"
+            onClick={handleLogout}
+          >
+            Logout
+          </button>
         </div>
       </div>
+
+      {/* Stats */}
+
+      <div className="row g-4 mb-4">
+
+        <div className="col-md-3">
+          <div className="card text-center shadow-sm h-100">
+            <div className="card-body">
+              <h1>📖</h1>
+              <h3>{bookings.length}</h3>
+              <p>Total Bookings</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="col-md-3">
+          <div className="card text-center shadow-sm h-100">
+            <div className="card-body">
+              <h1>❤️</h1>
+              <h3>{wishlist.length}</h3>
+              <p>Wishlist</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="col-md-3">
+          <div className="card text-center shadow-sm h-100">
+            <div className="card-body">
+              <h1>⭐</h1>
+              <h3>{reviews.length}</h3>
+              <p>Reviews</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="col-md-3">
+          <div className="card text-center shadow-sm h-100">
+            <div className="card-body">
+              <h1>👤</h1>
+              <h5>{user?.role}</h5>
+              <p>Account Type</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      {/* Current Booking */}
+
+      <div className="card shadow-sm mb-4">
+
+        <div className="card-header bg-primary text-white">
+          <h5 className="mb-0">
+            Current Booking
+          </h5>
+        </div>
+
+        <div className="card-body">
+
+          {activeBooking ? (
+
+            <div>
+
+              <h4>{activeBooking.pgName}</h4>
+
+              <hr />
+
+              <div className="row">
+
+                <div className="col-md-6">
+
+                  <p>
+                    <strong>Booking ID :</strong>{" "}
+                    {activeBooking.bookingId}
+                  </p>
+
+                  <p>
+                    <strong>Room :</strong>{" "}
+                    {activeBooking.roomId}
+                  </p>
+
+                  <p>
+                    <strong>Status :</strong>{" "}
+                    {activeBooking.status}
+                  </p>
+
+                </div>
+
+                <div className="col-md-6">
+
+                  <p>
+                    <strong>Booking Date :</strong>{" "}
+                    {activeBooking.bookingDate}
+                  </p>
+
+                  <p>
+                    <strong>Rent :</strong> ₹
+                    {activeBooking.rent}
+                  </p>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          ) : (
+
+            <div className="text-center py-4">
+
+              <h4>No Active Booking</h4>
+
+              <Link
+                to="/find-pg"
+                className="btn btn-primary mt-3"
+              >
+                Find PG
+              </Link>
+
+            </div>
+
+          )}
+
+        </div>
+
+      </div>
+
+      {/* Quick Actions */}
+
+      <div className="row g-3 mb-4">
+
+        <div className="col-md-3">
+          <Link
+            to="/my-bookings"
+            className="btn btn-outline-primary w-100"
+          >
+            My Bookings
+          </Link>
+        </div>
+
+        <div className="col-md-3">
+          <Link
+            to="/wishlist"
+            className="btn btn-outline-danger w-100"
+          >
+            Wishlist
+          </Link>
+        </div>
+
+        <div className="col-md-3">
+          <Link
+            to="/profile"
+            className="btn btn-outline-success w-100"
+          >
+            Profile
+          </Link>
+        </div>
+
+        <div className="col-md-3">
+          <Link
+            to="/change-password"
+            className="btn btn-outline-dark w-100"
+          >
+            Change Password
+          </Link>
+        </div>
+
+      </div>
+            {/* Recent Bookings */}
+
+      <div className="card shadow-sm mb-4">
+
+        <div className="card-header bg-dark text-white">
+          <h5 className="mb-0">Recent Bookings</h5>
+        </div>
+
+        <div className="card-body">
+
+          {bookings.length === 0 ? (
+
+            <div className="text-center py-4">
+              No Bookings Found
+            </div>
+
+          ) : (
+
+            <div className="table-responsive">
+
+              <table className="table table-hover">
+
+                <thead>
+
+                  <tr>
+                    <th>Booking ID</th>
+                    <th>PG</th>
+                    <th>Room</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                  </tr>
+
+                </thead>
+
+                <tbody>
+
+                  {bookings.map((booking) => (
+
+                    <tr key={booking.bookingId}>
+
+                      <td>{booking.bookingId}</td>
+
+                      <td>{booking.pgName}</td>
+
+                      <td>{booking.roomId}</td>
+
+                      <td>
+
+                        <span
+                          className={`badge ${
+                            booking.status === "CONFIRMED"
+                              ? "bg-success"
+                              : booking.status === "ACTIVE"
+                              ? "bg-primary"
+                              : booking.status === "CANCELLED"
+                              ? "bg-danger"
+                              : "bg-secondary"
+                          }`}
+                        >
+                          {booking.status}
+                        </span>
+
+                      </td>
+
+                      <td>{booking.bookingDate}</td>
+
+                    </tr>
+
+                  ))}
+
+                </tbody>
+
+              </table>
+
+            </div>
+
+          )}
+
+        </div>
+
+      </div>
+
+      {/* Reviews & Wishlist */}
+
+      <div className="row">
+
+        <div className="col-md-6">
+
+          <div className="card shadow-sm mb-4">
+
+            <div className="card-header">
+              <h5 className="mb-0">
+                My Reviews
+              </h5>
+            </div>
+
+            <div className="card-body">
+
+              {reviews.length === 0 ? (
+
+                <p>No Reviews Yet.</p>
+
+              ) : (
+
+                reviews.slice(0, 5).map((review) => (
+
+                  <div
+                    key={review.reviewId}
+                    className="border-bottom mb-3 pb-2"
+                  >
+
+                    <strong>
+                      ⭐ {review.rating}/5
+                    </strong>
+
+                    <p className="mb-1">
+                      {review.comment}
+                    </p>
+
+                  </div>
+
+                ))
+
+              )}
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <div className="col-md-6">
+
+          <div className="card shadow-sm mb-4">
+
+            <div className="card-header">
+              <h5 className="mb-0">
+                Wishlist
+              </h5>
+            </div>
+
+            <div className="card-body">
+
+              {wishlist.length === 0 ? (
+
+                <p>No Wishlist Added.</p>
+
+              ) : (
+
+                wishlist.slice(0, 5).map((item) => (
+
+                  <div
+                    key={item.wishlistId}
+                    className="border-bottom pb-2 mb-3"
+                  >
+
+                    <strong>
+                      {item.pgName}
+                    </strong>
+
+                    <br />
+
+                    <small className="text-muted">
+                      {item.city}
+                    </small>
+
+                  </div>
+
+                ))
+
+              )}
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
     </div>
   );
 };

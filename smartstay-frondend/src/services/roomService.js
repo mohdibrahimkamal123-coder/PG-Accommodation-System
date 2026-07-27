@@ -1,5 +1,6 @@
 import api from "./api";
 
-export const getRoomsByPgId = (pgId) => {
-  return api.get(`/rooms/pg/${pgId}`);
+export const getRoomsByPgId = async (pgId) => {
+  const response = await api.get(`/rooms/pg/${pgId}`);
+  return response.data;
 };

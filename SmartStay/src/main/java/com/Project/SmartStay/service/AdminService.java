@@ -293,17 +293,28 @@ public class AdminService {
      );
    }
 //Revenue
-public RevenueResponse getRevenue() {
-  Double totalRevenue = 0.0;
-  List<Booking> bookings = bookingRepository.findAll();
-  for (Booking booking : bookings) {
-      Room room = roomRepository.findById(booking.getRoomId())
-              .orElseThrow(() ->
-                      new RuntimeException("Room Not Found"));
-      totalRevenue += room.getRent();
-  }
-  return new RevenueResponse(totalRevenue);
-}
+ public RevenueResponse getRevenue() {
+
+	    Double totalRevenue = 0.0;
+
+	    List<Booking> bookings = bookingRepository.findAll();
+
+	    for (Booking booking : bookings) {
+
+	        Room room = roomRepository.findById(booking.getRoomId())
+	                .orElseThrow(() ->
+	                        new RuntimeException("Room Not Found"));
+
+	        totalRevenue += room.getRent();
+	    }
+
+	    return new RevenueResponse(
+	            totalRevenue,
+	            bookingRepository.count(),
+	            userRepository.count(),
+	            pgRepository.count()
+	    );
+	}
 //Export Data
 public ExportResponse exportData() {
  return new ExportResponse(

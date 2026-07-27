@@ -1,16 +1,21 @@
 import api from "./api";
 
-// Create Booking
-export const bookRoom = (bookingData) => {
-  return api.post("/bookings", bookingData);
+export const bookRoom = async (bookingData) => {
+  const response = await api.post("/bookings", bookingData);
+  return response.data;
 };
 
-// Get Logged-in User Bookings
-export const getUserBookings = (userId) => {
-  return api.get(`/bookings/user/${userId}`);
+export const getUserBookings = async (userId) => {
+  const response = await api.get(`/bookings/user/${userId}`);
+  return response.data;
 };
 
-// Cancel Booking
-export const cancelBooking = (bookingId) => {
-  return api.delete(`/bookings/${bookingId}`);
+export const getBookingById = async (bookingId) => {
+  const response = await api.get(`/bookings/${bookingId}`);
+  return response.data;
+};
+
+export const cancelBooking = async (bookingId) => {
+  const response = await api.delete(`/bookings/${bookingId}`);
+  return response.data;
 };

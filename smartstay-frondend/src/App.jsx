@@ -1,84 +1,234 @@
-import React, { useEffect } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
-import { gsap } from 'gsap';
+import { Routes, Route, Navigate } from "react-router-dom";
 
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
+// ========== USER PAGES ==========
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import FindPG from "./pages/FindPG";
+import PGDetails from "./pages/PGDetails";
+import Booking from "./pages/Booking";
+import BookingSuccess from "./pages/BookingSuccess";
+import MyBookings from "./pages/MyBookings";
+import Wishlist from "./pages/Wishlist";
+import Profile from "./pages/Profile";
+import MyReviews from "./pages/MyReviews";
+import Dashboard from "./pages/Dashboard";
+import ChangePassword from "./pages/ChangePassword";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
+import NotFound from "./pages/NotFound";
+import ProtectedRoute from "./components/ProtectedRoute";
 
-// Page Imports
-import Home from './pages/Home';
-import About from './pages/About';
-import Contact from './pages/Contact';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import FindPG from './pages/FindPG';
-import PGDetails from './pages/PGDetails';
-import Booking from './pages/Booking';
-import BookingSuccess from './pages/BookingSuccess';
-import Wishlist from './pages/Wishlist';
-import Dashboard from './pages/Dashboard';
-import MyBookings from './pages/MyBookings';
-import Profile from './pages/Profile';
-import ChangePassword from './pages/ChangePassword';
-import MyReviews from './pages/MyReviews';
-import NotFound from './pages/NotFound';
-import Unauthorized from './pages/Unauthorized';
+// ========== ADMIN PAGES ==========
+import AdminLogin from "./pages/admin/AdminLogin";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminOwners from "./pages/admin/AdminOwners";
+import AdminPgs from "./pages/admin/AdminPgs";
+import AdminBookings from "./pages/admin/AdminBookings";
+import AdminReviews from "./pages/admin/AdminReviews";
+import AdminReports from "./pages/admin/AdminReports";
+import AdminLayout from "./components/admin/AdminLayout";
 
-import './App.css';
+//Owner routes//
+import OwnerLogin from "./pages/owner/OwnerLogin";
+import OwnerDashboard from "./pages/owner/OwnerDashboard";
+import MyPgs from "./pages/owner/MyPgs";
+import Rooms from "./pages/owner/Rooms";
+import Bookings from "./pages/owner/Bookings";
+import OwnerProfile from "./pages/owner/Profile";
+import OwnerChangePassword from "./pages/owner/ChangePassword";
 
-// Scroll to top helper on route changes
-const ScrollToTop = () => {
-  const { pathname } = useLocation();
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
-  return null;
+// ================= ADMIN PROTECTED ROUTE =================
+const AdminProtectedRoute = ({ children }) => {
+  const admin = localStorage.getItem("admin");
+
+  return admin ? children : <Navigate to="/admin/login" replace />;
 };
 
-const App = () => {
-  useEffect(() => {
-    // Initial page load navbar animations
-    gsap.fromTo('.navbar', 
-      { y: -80, opacity: 0 },
-      { y: 0, opacity: 1, duration: 1, ease: 'power3.out' }
-    );
-  }, []);
-
+function App() {
   return (
-    <div className="app-container">
-      {/* Scroll Management */}
-      <ScrollToTop />
+    <Routes>
 
-      {/* Sticky Top Navigation */}
-      <Navbar />
+      {/* ================= PUBLIC ROUTES ================= */}
 
-      {/* Routed Pages Shell */}
-      <main style={{ minHeight: '80vh' }}>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/find-pg" element={<FindPG />} />
-          <Route path="/pg/:id" element={<PGDetails />} />
-          <Route path="/booking" element={<Booking />} />
-          <Route path="/booking-success" element={<BookingSuccess />} />
-          <Route path="/wishlist" element={<Wishlist />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/my-bookings" element={<MyBookings />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/change-password" element={<ChangePassword />} />
-          <Route path="/my-reviews" element={<MyReviews />} />
-          <Route path="/unauthorized" element={<Unauthorized />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </main>
+      <Route path="/" element={<Home />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/find-pg" element={<FindPG />} />
+      <Route path="/pg/:id" element={<PGDetails />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/booking-success" element={<BookingSuccess />} />
 
-      {/* Minimalist 5-Column Footer */}
-      <Footer />
-    </div>
+      {/* ================= USER PROTECTED ================= */}
+
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/booking/:id"
+        element={
+          <ProtectedRoute>
+            <Booking />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/my-bookings"
+        element={
+          <ProtectedRoute>
+            <MyBookings />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/wishlist"
+        element={
+          <ProtectedRoute>
+            <Wishlist />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/change-password"
+        element={
+          <ProtectedRoute>
+            <ChangePassword />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/my-reviews"
+        element={
+          <ProtectedRoute>
+            <MyReviews />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* ================= ADMIN LOGIN ================= */}
+
+      <Route path="/admin/login" element={<AdminLogin />} />
+
+      {/* ================= ADMIN DASHBOARD ================= */}
+
+      <Route
+        path="/admin/dashboard"
+        element={
+          <AdminProtectedRoute>
+            <AdminLayout>
+              <AdminDashboard />
+            </AdminLayout>
+          </AdminProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/users"
+        element={
+          <AdminProtectedRoute>
+            <AdminLayout>
+              <AdminUsers />
+            </AdminLayout>
+          </AdminProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/owners"
+        element={
+          <AdminProtectedRoute>
+            <AdminLayout>
+              <AdminOwners />
+            </AdminLayout>
+          </AdminProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/pgs"
+        element={
+          <AdminProtectedRoute>
+            <AdminLayout>
+              <AdminPgs />
+            </AdminLayout>
+          </AdminProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/bookings"
+        element={
+          <AdminProtectedRoute>
+            <AdminLayout>
+              <AdminBookings />
+            </AdminLayout>
+          </AdminProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/reviews"
+        element={
+          <AdminProtectedRoute>
+            <AdminLayout>
+              <AdminReviews />
+            </AdminLayout>
+          </AdminProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/reports"
+        element={
+          <AdminProtectedRoute>
+            <AdminLayout>
+              <AdminReports />
+            </AdminLayout>
+          </AdminProtectedRoute>
+        }
+      />
+
+      {/* ================= 404 ================= */}
+
+      <Route path="*" element={<NotFound />} />
+
+
+        <Route path="/owner/login" element={<OwnerLogin />} />
+
+<Route path="/owner/dashboard" element={<OwnerDashboard />} />
+
+<Route path="/owner/pgs" element={<MyPgs />} />
+
+<Route path="/owner/rooms" element={<Rooms />} />
+
+<Route path="/owner/bookings" element={<Bookings />} />
+
+<Route path="/owner/profile" element={<OwnerProfile />} />
+
+<Route path="/owner/change-password" element={<OwnerChangePassword />} />
+    </Routes>
   );
-};
+}
 
 export default App;
