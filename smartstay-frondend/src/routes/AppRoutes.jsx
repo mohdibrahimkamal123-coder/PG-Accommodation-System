@@ -9,6 +9,7 @@ import UserDashboard from "../pages/UserDashboard";
 import Profile from "../pages/Profile";
 import ProtectedRoute from "../components/ProtectedRoute";
 import MyBookings from "../pages/MyBookings";
+import Wishlist from "../pages/Wishlist";
 
 function AppRoutes() {
   return (
@@ -43,6 +44,14 @@ function AppRoutes() {
   element={
     <ProtectedRoute>
       <MyBookings />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/wishlist"
+  element={
+    <ProtectedRoute>
+      <Wishlist />
     </ProtectedRoute>
   }
 />

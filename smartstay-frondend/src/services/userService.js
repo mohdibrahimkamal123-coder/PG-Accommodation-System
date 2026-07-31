@@ -14,3 +14,11 @@ export const updateUser = async (id, userData) => {
   const response = await api.put(`/users/${id}`, userData);
   return response.data;
 };
+
+export const changePassword = async (userId, passwordData) => {
+  const response = await api.put(
+    `/users/change-password/${userId}`,
+    passwordData
+  );
+  return response.data;
+};

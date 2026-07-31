@@ -1,7 +1,39 @@
 import { Link } from "react-router-dom";
+import { addToWishlist } from "../services/wishlistService";
+
 function PGCard({ pg }) {
+
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  const handleWishlist = async () => {
+
+    if (!user) {
+      alert("Please login first.");
+      return;
+    }
+
+    try {
+
+      await addToWishlist({
+
+        userId: user.userId,
+        pgId: pg.pgId
+
+      });
+
+      alert("Added to Wishlist ❤️");
+
+    } catch (error) {
+
+      alert(error.response?.data || "PG is already in your wishlist.");
+
+    }
+
+  };
+
   return (
     <div className="col-lg-4 col-md-6 mb-4">
+
       <div className="card shadow h-100">
 
         <img
@@ -46,16 +78,24 @@ function PGCard({ pg }) {
 
           </div>
 
-         <Link
-  to={`/pg/${pg.pgId}`}
-  className="btn btn-primary w-100"
->
-  View Details
-</Link>
+          <button
+            className="btn btn-outline-danger w-100 mb-2"
+            onClick={handleWishlist}
+          >
+            ❤️ Add to Wishlist
+          </button>
+
+          <Link
+            to={`/pg/${pg.pgId}`}
+            className="btn btn-primary w-100"
+          >
+            View Details
+          </Link>
 
         </div>
 
       </div>
+
     </div>
   );
 }

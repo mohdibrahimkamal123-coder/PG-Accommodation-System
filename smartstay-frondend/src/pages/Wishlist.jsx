@@ -66,7 +66,9 @@ const Wishlist = () => {
 
                     <p>{item.city}</p>
 
-                    <p>₹{item.rent}</p>
+                   <p>₹{item.rentStarting}</p>
+
+                   <p>⭐ {item.rating ?? "New"}</p>
 
                     <Link
                       to={`/pg/${item.pgId}`}
