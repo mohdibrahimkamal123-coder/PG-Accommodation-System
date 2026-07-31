@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.Project.SmartStay.dto.ChangePasswordRequest;
 import com.Project.SmartStay.entity.User;
 import com.Project.SmartStay.exception.ResourceNotFoundException;
 import com.Project.SmartStay.repository.UserRepository;
@@ -51,6 +52,23 @@ public class UserService {
         User user = getUserById(id);
 
         userRepository.delete(user);
+    }
+    
+    public String changePassword(Long userId, ChangePasswordRequest request) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("User Not Found"));
+
+        if (!user.getPassword().equals(request.getOldPassword())) {
+            throw new RuntimeException("Old Password is Incorrect");
+        }
+
+        user.setPassword(request.getNewPassword());
+
+        userRepository.save(user);
+
+        return "Password Changed Successfully";
     }
 }
 

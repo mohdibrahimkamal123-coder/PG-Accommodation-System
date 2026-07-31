@@ -20,8 +20,8 @@ public class BookingController {
     private BookingService bookingService;
 
     @PostMapping
-    public Booking bookRoom(@Valid @RequestBody Booking booking) {
-        return bookingService.bookRoom(booking);
+    public BookingResponse bookRoom(@Valid @RequestBody Booking booking) {
+        return bookingService.createBooking(booking);
     }
 
     @GetMapping("/user/{userId}")

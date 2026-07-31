@@ -10,12 +10,20 @@ import com.Project.SmartStay.entity.Pg;
 import com.Project.SmartStay.entity.Review;
 import com.Project.SmartStay.repository.PgRepository;
 import com.Project.SmartStay.repository.ReviewRepository;
+import java.util.ArrayList;
+
+import com.Project.SmartStay.dto.ReviewResponse;
+import com.Project.SmartStay.entity.User;
+import com.Project.SmartStay.repository.UserRepository;
+
 
 @Service
 public class ReviewService {
 
     @Autowired
     private ReviewRepository reviewRepository;
+    @Autowired
+    private UserRepository userRepository;
     
     @Autowired
     private PgRepository pgRepository;
@@ -44,8 +52,37 @@ public class ReviewService {
         return savedReview;
     }
 
-    public List<Review> getReviewsByPg(Long pgId) {
-        return reviewRepository.findByPgId(pgId);
+    public List<ReviewResponse> getReviewsByPg(Long pgId) {
+
+        List<Review> reviews = reviewRepository.findByPgId(pgId);
+
+        List<ReviewResponse> response = new ArrayList<>();
+
+        for (Review review : reviews) {
+
+            User user = userRepository
+                    .findById(review.getUserId())
+                    .orElse(null);
+
+            ReviewResponse dto = new ReviewResponse();
+
+            dto.setReviewId(review.getReviewId());
+            dto.setUserId(review.getUserId());
+            dto.setPgId(review.getPgId());
+            dto.setRating(review.getRating());
+            dto.setComment(review.getComment());
+            dto.setCreatedAt(review.getCreatedAt());
+
+            if (user != null) {
+                dto.setUserName(user.getFullName());
+            } else {
+                dto.setUserName("Unknown User");
+            }
+
+            response.add(dto);
+        }
+
+        return response;
     }
 
     public List<Review> getReviewsByUser(Long userId) {

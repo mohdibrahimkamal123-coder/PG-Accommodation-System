@@ -1,5 +1,7 @@
 package com.Project.SmartStay.service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -39,16 +41,25 @@ public class BookingService {
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Room Not Found"));
 
+        // Check Bed Availability
         if (room.getAvailableBeds() <= 0) {
             throw new NoBedsAvailableException("No Beds Available");
         }
 
+        // Generate Booking Number
+        booking.setBookingNumber(generateBookingNumber());
+
+        // Default Status
+        if (booking.getStatus() == null || booking.getStatus().isBlank()) {
+            booking.setStatus("PENDING");
+        }
+
+        // Reduce Available Beds
         room.setAvailableBeds(room.getAvailableBeds() - 1);
         roomRepository.save(room);
 
         return bookingRepository.save(booking);
     }
-
     // ==========================
     // Get User Bookings
     // ==========================
@@ -76,9 +87,12 @@ public class BookingService {
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Room Not Found"));
 
+        // Restore Available Bed
         room.setAvailableBeds(room.getAvailableBeds() + 1);
-
         roomRepository.save(room);
+
+        // Update Status Before Delete (optional for history)
+        booking.setStatus("CANCELLED");
 
         bookingRepository.delete(booking);
 
@@ -86,7 +100,7 @@ public class BookingService {
     }
 
     // ==========================
-    // Admin
+    // Get All Bookings
     // ==========================
     public List<Booking> getAllBookings() {
         return bookingRepository.findAll();
@@ -104,7 +118,6 @@ public class BookingService {
 
         return convertToResponse(booking);
     }
-
     // =====================================================
     // OWNER : Get All Bookings of Owner
     // =====================================================
@@ -154,7 +167,6 @@ public class BookingService {
                         new ResourceNotFoundException("Booking Not Found"));
 
         booking.setStatus("APPROVED");
-
         bookingRepository.save(booking);
 
         return "Booking Approved Successfully";
@@ -170,7 +182,6 @@ public class BookingService {
                         new ResourceNotFoundException("Booking Not Found"));
 
         booking.setStatus("REJECTED");
-
         bookingRepository.save(booking);
 
         return "Booking Rejected Successfully";
@@ -186,34 +197,66 @@ public class BookingService {
                         new ResourceNotFoundException("Booking Not Found"));
 
         booking.setStatus("COMPLETED");
-
         bookingRepository.save(booking);
+
         return "Booking Completed Successfully";
     }
 
+    // ==========================
+    // Generate Booking Number
+    // ==========================
+    private String generateBookingNumber() {
+
+        long count = bookingRepository.count() + 1;
+
+        String date = LocalDate.now()
+                .format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+
+        return "BK" + date + String.format("%04d", count);
+    }
+    // =====================================================
     // Convert Entity -> DTO
+    // =====================================================
     private BookingResponse convertToResponse(Booking booking) {
+
         Room room = roomRepository
                 .findById(booking.getRoomId())
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Room Not Found"));
+
         Pg pg = pgRepository
                 .findById(room.getPgId())
                 .orElseThrow(() ->
                         new ResourceNotFoundException("PG Not Found"));
+
         return new BookingResponse(
                 booking.getBookingId(),
+                booking.getBookingNumber(),
                 booking.getBookingDate(),
                 booking.getStatus(),
+                booking.getMoveInDate(),
+                booking.getExpectedStayMonths(),
+                booking.getEmergencyContact(),
+                booking.getIdProofType(),
+                booking.getIdProofNumber(),
+                booking.getSpecialRequest(),
+
                 room.getRoomId(),
+                room.getRoomNumber(),
                 room.getRoomType(),
                 room.getRent(),
+
                 pg.getPgId(),
                 pg.getPgName(),
                 pg.getAddress(),
                 pg.getCity(),
                 pg.getState()
         );
+    }
+    
+    public BookingResponse createBooking(Booking booking) {
+        Booking savedBooking = bookRoom(booking);
+        return convertToResponse(savedBooking);
     }
 
 }

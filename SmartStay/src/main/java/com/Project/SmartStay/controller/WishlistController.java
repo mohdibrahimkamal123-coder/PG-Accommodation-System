@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import com.Project.SmartStay.dto.WishlistResponse;
 import com.Project.SmartStay.entity.Wishlist;
 import com.Project.SmartStay.service.WishlistService;
 
@@ -28,7 +29,7 @@ public class WishlistController {
 
     // Get Wishlist by User
     @GetMapping("/user/{userId}")
-    public List<Wishlist> getWishlistByUser(@PathVariable Long userId) {
+    public List<WishlistResponse> getWishlistByUser(@PathVariable Long userId) {
 
         return wishlistService.getWishlistByUser(userId);
 

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 
+import com.Project.SmartStay.dto.ChangePasswordRequest;
 import com.Project.SmartStay.entity.User;
 import com.Project.SmartStay.service.UserService;
 
@@ -51,5 +52,14 @@ public class UserController {
         userService.deleteUser(id);
 
         return "User deleted successfully.";
+    }
+    
+    @PutMapping("/change-password/{id}")
+    public String changePassword(
+            @PathVariable Long id,
+            @RequestBody ChangePasswordRequest request) {
+
+        return userService.changePassword(id, request);
+
     }
 }
