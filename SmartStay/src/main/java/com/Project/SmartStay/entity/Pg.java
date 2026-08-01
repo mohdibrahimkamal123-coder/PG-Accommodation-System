@@ -36,8 +36,7 @@ public class Pg {
     private String state;
 
     @NotBlank(message = "Pincode is required")
-    @Pattern(regexp = "^[0-9]{6}$",
-             message = "Pincode must contain exactly 6 digits")
+    @Pattern(regexp = "^[0-9]{6}$", message = "Pincode must contain exactly 6 digits")
     private String pincode;
 
     @NotNull(message = "Starting Rent is required")
@@ -52,16 +51,21 @@ public class Pg {
     @NotNull(message = "WiFi Availability is required")
     @Column(name = "wifi_available")
     private Boolean wifiAvailable;
+
     @Column(nullable = false)
     private Boolean approved = false;
 
     @NotNull(message = "Laundry Availability is required")
     @Column(name = "laundry_available")
-    
-    
     private Boolean laundryAvailable;
 
     private Double rating;
+
+    // ==========================================
+    // Added Image URL Field for PG Photo Upload
+    // ==========================================
+    @Column(name = "image_url")
+    private String imageUrl;
 
     public Pg() {
     }
@@ -169,11 +173,23 @@ public class Pg {
     public void setRating(Double rating) {
         this.rating = rating;
     }
+
     public Boolean getApproved() {
         return approved;
     }
 
     public void setApproved(Boolean approved) {
         this.approved = approved;
+    }
+
+    // ==========================================
+    // Getter & Setter for imageUrl
+    // ==========================================
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }

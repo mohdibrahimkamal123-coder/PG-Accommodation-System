@@ -6,7 +6,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.Project.SmartStay.dto.ChangePasswordRequest;
 import com.Project.SmartStay.dto.OwnerLoginRequest;
@@ -29,14 +39,15 @@ import jakarta.validation.Valid;
 @CrossOrigin(origins = "http://localhost:5173")
 public class OwnerController {
 
-	@Autowired
-	private PgRepository pgRepository;
+    @Autowired
+    private PgRepository pgRepository;
 
-	@Autowired
-	private RoomRepository roomRepository;
+    @Autowired
+    private RoomRepository roomRepository;
 
-	@Autowired
-	private BookingRepository bookingRepository;
+    @Autowired
+    private BookingRepository bookingRepository;
+
     @Autowired
     private OwnerService ownerService;
 
@@ -44,9 +55,7 @@ public class OwnerController {
     // Register Owner
     // ==========================
     @PostMapping("/register")
-    public String registerOwner(
-            @Valid @RequestBody OwnerRegisterRequest request) {
-
+    public String registerOwner(@Valid @RequestBody OwnerRegisterRequest request) {
         return ownerService.registerOwner(request);
     }
 
@@ -54,9 +63,7 @@ public class OwnerController {
     // Login Owner
     // ==========================
     @PostMapping("/login")
-    public OwnerLoginResponse loginOwner(
-            @Valid @RequestBody OwnerLoginRequest request) {
-
+    public OwnerLoginResponse loginOwner(@Valid @RequestBody OwnerLoginRequest request) {
         return ownerService.loginOwner(request);
     }
 
@@ -64,9 +71,7 @@ public class OwnerController {
     // Get Owner Profile
     // ==========================
     @GetMapping("/profile/{ownerId}")
-    public OwnerProfileResponse getProfile(
-            @PathVariable Long ownerId) {
-
+    public OwnerProfileResponse getProfile(@PathVariable Long ownerId) {
         return ownerService.getProfile(ownerId);
     }
 
@@ -77,7 +82,6 @@ public class OwnerController {
     public String updateProfile(
             @PathVariable Long ownerId,
             @Valid @RequestBody OwnerUpdateRequest request) {
-
         return ownerService.updateProfile(ownerId, request);
     }
 
@@ -88,12 +92,12 @@ public class OwnerController {
     public String changePassword(
             @PathVariable Long ownerId,
             @Valid @RequestBody ChangePasswordRequest request) {
-
         return ownerService.changePassword(ownerId, request);
     }
- // ==========================
- // Owner Dashboard
- // ==========================
+
+    // ==========================
+    // Owner Dashboard
+    // ==========================
     @GetMapping("/dashboard/{ownerId}")
     public Map<String, Object> getDashboard(@PathVariable Long ownerId) {
 
@@ -155,7 +159,47 @@ public class OwnerController {
 
         return response;
     }
-    
-    
 
+    // ==========================
+    // Add PG with Image Upload (FIXED)
+    // ==========================
+    @PostMapping(value = "/add-pg", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> addPg(
+            @RequestPart("pg") Pg pg,
+            @RequestPart(value = "image", required = false) MultipartFile imageFile) {
+
+        try {
+            // 1. Image check karein aur 'uploads' folder mein save karein
+            if (imageFile != null && !imageFile.isEmpty()) {
+                String uploadDir = "uploads/";
+                File dir = new File(uploadDir);
+                if (!dir.exists()) {
+                    dir.mkdirs(); // Folder auto create ho jayega agar nahi hai
+                }
+
+                // Unique Filename (Example: 1718293021_room.jpg)
+                String fileName = System.currentTimeMillis() + "_" + imageFile.getOriginalFilename();
+                Path filePath = Paths.get(uploadDir + fileName);
+
+                // File system par write karein
+                Files.write(filePath, imageFile.getBytes());
+
+                // Database me File ka Access Path store karein
+                pg.setImageUrl("/uploads/" + fileName);
+            }
+
+            // 2. Save directly in database
+            Pg savedPg = pgRepository.save(pg);
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedPg);
+
+        } catch (IOException e) {
+            e.printStackTrace(); // Console check karne ke liye
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error saving image file: " + e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace(); // Console check karne ke liye
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to add PG: " + e.getMessage());
+        }
+    }
 }

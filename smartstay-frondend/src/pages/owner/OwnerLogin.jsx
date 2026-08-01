@@ -1,5 +1,9 @@
 import React, { useState } from "react";
+
 import { useNavigate, Link } from "react-router-dom";
+
+
+
 import { ownerLogin } from "../../services/ownerService";
 
 const OwnerLogin = () => {
@@ -350,6 +354,7 @@ const OwnerLogin = () => {
                     SmartStay
                 </Link>
 
+
                 <Link to="/login" className="back-home-link">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
@@ -357,6 +362,16 @@ const OwnerLogin = () => {
                     </svg>
                     User Login
                 </Link>
+
+                {/* ===== Register Link Section ===== */}
+                <div className="text-center mt-3">
+                    <span className="text-muted">Don't have an account? </span>
+                    <Link to="/owner/register" className="text-decoration-none fw-bold">
+                        Register
+                    </Link>
+                </div>
+
+
             </div>
 
             {/* Main Login Card */}

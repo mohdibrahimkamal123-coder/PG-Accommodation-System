@@ -1,8 +1,11 @@
-import api from "./api";
+import api from "./api"; // Shared Axios Instance Use Ho Raha Hai
 
-export const ownerLogin = (data) => {
-    return api.post("/owners/login", data);
-};
+// Auth & Registration
+export const ownerLogin = (data) => 
+    api.post("/owners/login", data);
+
+export const ownerRegister = (data) => 
+    api.post("/owners/register", data); 
 
 // Dashboard
 export const getDashboard = (ownerId) =>
@@ -22,8 +25,26 @@ export const changePassword = (ownerId, data) =>
 export const getMyPgs = (ownerId) =>
     api.get(`/owner/pgs/owner/${ownerId}`);
 
-export const addPg = (data) =>
-    api.post("/owner/pgs", data);
+// ==========================================
+// Updated Add PG (Handles JSON + Multipart Image Upload)
+// ==========================================
+export const addPg = (pgData, imageFile) => {
+    const formData = new FormData();
+
+    formData.append(
+        "pg",
+        new Blob(
+            [JSON.stringify(pgData)],
+            { type: "application/json" }
+        )
+    );
+
+    if (imageFile) {
+        formData.append("image", imageFile);
+    }
+
+    return api.post("/owners/add-pg", formData);
+};
 
 export const updatePg = (id, data) =>
     api.put(`/owner/pgs/${id}`, data);
