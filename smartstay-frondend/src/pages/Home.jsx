@@ -1985,8 +1985,8 @@ const Home = () => {
                             <h6 className="footer-heading">Contact Us</h6>
                             <ul className="footer-links">
                                 <li><a href="mailto:hello@smartstay.in">hello@smartstay.in</a></li>
-                                <li><a href="tel:+919876543210">+91 98765 43210</a></li>
-                                <li><span style={{ color: "#64748b", fontSize: "0.9rem" }}>HSR Layout, Bangalore, KA - 560102</span></li>
+                                <li><a href="tel:+919876543210">+91 8576897117</a></li>
+                                <li><span style={{ color: "#64748b", fontSize: "0.9rem" }}>Noida, UP - 201309</span></li>
                             </ul>
                         </div>
 

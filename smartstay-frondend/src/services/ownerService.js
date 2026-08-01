@@ -1,11 +1,11 @@
-import api from "./api"; // Shared Axios Instance Use Ho Raha Hai
+import api from "./api";
 
 // Auth & Registration
-export const ownerLogin = (data) => 
+export const ownerLogin = (data) =>
     api.post("/owners/login", data);
 
-export const ownerRegister = (data) => 
-    api.post("/owners/register", data); 
+export const ownerRegister = (data) =>
+    api.post("/owners/register", data);
 
 // Dashboard
 export const getDashboard = (ownerId) =>
@@ -21,38 +21,61 @@ export const updateProfile = (ownerId, data) =>
 export const changePassword = (ownerId, data) =>
     api.put(`/owners/change-password/${ownerId}`, data);
 
-// PG
+// ==========================
+// PG APIs
+// ==========================
+
 export const getMyPgs = (ownerId) =>
     api.get(`/owner/pgs/owner/${ownerId}`);
 
-// ==========================================
-// Updated Add PG (Handles JSON + Multipart Image Upload)
-// ==========================================
+// Add PG
 export const addPg = (pgData, imageFile) => {
+
     const formData = new FormData();
 
-    formData.append(
-        "pg",
-        new Blob(
-            [JSON.stringify(pgData)],
-            { type: "application/json" }
-        )
-    );
+    Object.keys(pgData).forEach((key) => {
+        formData.append(key, pgData[key]);
+    });
 
     if (imageFile) {
         formData.append("image", imageFile);
     }
 
-    return api.post("/owners/add-pg", formData);
+    return api.post("/owner/pgs", formData, {
+        headers: {
+            "Content-Type": "multipart/form-data",
+        },
+    });
 };
 
-export const updatePg = (id, data) =>
-    api.put(`/owner/pgs/${id}`, data);
+// Update PG
+export const updatePg = (id, pgData, imageFile) => {
 
+    const formData = new FormData();
+
+    Object.keys(pgData).forEach((key) => {
+        formData.append(key, pgData[key]);
+    });
+
+    if (imageFile) {
+        formData.append("image", imageFile);
+    }
+
+    return api.put(`/owner/pgs/${id}`, formData, {
+        headers: {
+            "Content-Type": "multipart/form-data",
+        },
+    });
+};
+
+// Delete PG
 export const deletePg = (id) =>
     api.delete(`/owner/pgs/${id}`);
 
+// ==========================
 // Rooms
+// ==========================
+
 export const getRooms = (pgId) =>
     api.get(`/owner/rooms/pg/${pgId}`);
 
@@ -65,7 +88,10 @@ export const updateRoom = (id, data) =>
 export const deleteRoom = (id) =>
     api.delete(`/owner/rooms/${id}`);
 
+// ==========================
 // Bookings
+// ==========================
+
 export const getBookings = (ownerId) =>
     api.get(`/owner/bookings/${ownerId}`);
 

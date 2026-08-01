@@ -58,6 +58,10 @@ public class Pg {
     @NotNull(message = "Laundry Availability is required")
     @Column(name = "laundry_available")
     private Boolean laundryAvailable;
+    
+    @NotBlank(message = "Gender Type is required")
+    @Column(name = "gender_type")
+    private String genderType;
 
     private Double rating;
 
@@ -191,5 +195,13 @@ public class Pg {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+    
+    public String getGenderType() {
+        return genderType;
+    }
+
+    public void setGenderType(String genderType) {
+        this.genderType = genderType;
     }
 }

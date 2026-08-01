@@ -28,6 +28,7 @@ const MyPgs = () => {
         state: "",
         pincode: "",
         rentStarting: "",
+         genderType:"Unisex",
         foodAvailable: false,
         wifiAvailable: false,
         laundryAvailable: false,
@@ -58,13 +59,32 @@ const MyPgs = () => {
     };
 
     // Image selection handler
-    const handleImageChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setImageFile(file);
-            setImagePreview(URL.createObjectURL(file)); // Local preview ke liye
-        }
-    };
+   const handleImageChange = (e) => {
+
+    const file = e.target.files[0];
+
+    if (!file) return;
+
+    // 5 MB limit
+    if (file.size > 5 * 1024 * 1024) {
+
+        alert("Image size should be less than 5 MB");
+
+        return;
+    }
+
+    // Image only
+    if (!file.type.startsWith("image/")) {
+
+        alert("Please select a valid image");
+
+        return;
+    }
+
+    setImageFile(file);
+
+    setImagePreview(URL.createObjectURL(file));
+};
 
     const resetForm = () => {
         setFormData({
@@ -76,6 +96,7 @@ const MyPgs = () => {
             state: "",
             pincode: "",
             rentStarting: "",
+            genderType:"Unisex",
             foodAvailable: false,
             wifiAvailable: false,
             laundryAvailable: false,
@@ -95,7 +116,7 @@ const MyPgs = () => {
         console.log("Image File:", imageFile);
         if (editId) {
             // Update PG
-            await updatePg(editId, formData);
+           await updatePg(editId, formData, imageFile);
             alert("PG Updated Successfully");} 
         else {
             // Add PG
@@ -126,6 +147,7 @@ const MyPgs = () => {
             state: pg.state,
             pincode: pg.pincode,
             rentStarting: pg.rentStarting,
+            genderType: pg.genderType,
             foodAvailable: pg.foodAvailable,
             wifiAvailable: pg.wifiAvailable,
             laundryAvailable: pg.laundryAvailable,
@@ -133,7 +155,11 @@ const MyPgs = () => {
         });
         
         // Agar pehle se koi image link hai to preview dikhana
-        setImagePreview(pg.imageUrl || "");
+       setImagePreview(
+    pg.imageUrl
+        ? `http://localhost:8080/uploads/${pg.imageUrl}`
+        : ""
+);
         setImageFile(null);
         setShowForm(true);
     };
@@ -291,6 +317,33 @@ const MyPgs = () => {
                                             required
                                         />
                                     </div>
+                                    <div className="col-md-4 mb-3">
+
+<label className="form-label">
+Gender
+</label>
+
+<select
+
+className="form-select"
+
+name="genderType"
+
+value={formData.genderType}
+
+onChange={handleChange}
+
+>
+
+<option value="Boys">Boys</option>
+
+<option value="Girls">Girls</option>
+
+<option value="Unisex">Unisex</option>
+
+</select>
+
+</div>
 
                                     {/* Image Input Section */}
                                     <div className="col-md-6 mb-3">
@@ -427,10 +480,19 @@ const MyPgs = () => {
                                             <td>{pg.pgId}</td>
                                             <td>
                                                 <img
-                                                    src={pg.imageUrl || "https://via.placeholder.com/60"}
-                                                    alt={pg.pgName}
-                                                    style={{ width: "50px", height: "50px", objectFit: "cover", borderRadius: "5px" }}
-                                                />
+    src={
+        pg.imageUrl
+            ? `http://localhost:8080/uploads/${pg.imageUrl}`
+            : "https://via.placeholder.com/60"
+    }
+    alt={pg.pgName}
+    style={{
+        width: "50px",
+        height: "50px",
+        objectFit: "cover",
+        borderRadius: "5px"
+    }}
+/>
                                             </td>
                                             <td>{pg.pgName}</td>
                                             <td>{pg.city}</td>

@@ -189,6 +189,7 @@ const PGDetails = () => {
                 <p><strong>Address:</strong> {pg.address}</p>
                 <p><strong>City:</strong> {pg.city}, {pg.state} - {pg.pincode}</p>
                 <p><strong>Starting Rent:</strong> ₹{pg.rentStarting.toLocaleString()}</p>
+                <p><strong>Gender :</strong> {pg.genderType}</p>
               </div>
               <div className="col-md-4">
                 <div className="card bg-light">
