@@ -1,3 +1,4 @@
+import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
 // ========== USER PAGES ==========
@@ -32,6 +33,7 @@ import AdminLayout from "./components/admin/AdminLayout";
 
 // ========== OWNER PAGES ==========
 import OwnerLogin from "./pages/owner/OwnerLogin";
+import OwnerRegister from "./components/OwnerRegister";
 import OwnerDashboard from "./pages/owner/OwnerDashboard";
 import MyPgs from "./pages/owner/MyPgs";
 import Rooms from "./pages/owner/Rooms";
@@ -129,7 +131,7 @@ function App() {
 
         {/* ================= ADMIN ROUTES ================= */}
         <Route path="/admin/login" element={<AdminLogin />} />
-        
+
         <Route
           path="/admin/dashboard"
           element={
@@ -203,7 +205,8 @@ function App() {
 
         {/* ================= OWNER ROUTES ================= */}
         <Route path="/owner/login" element={<OwnerLogin />} />
-        
+        <Route path="/owner/register" element={<OwnerRegister />} />
+
         <Route
           path="/owner/dashboard"
           element={

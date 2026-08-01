@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom"; // Link import kiya
 import { ownerLogin } from "../../services/ownerService";
 
 const OwnerLogin = () => {
@@ -130,6 +130,14 @@ const OwnerLogin = () => {
                     </button>
 
                 </form>
+
+                {/* ===== Register Link Section ===== */}
+                <div className="text-center mt-3">
+                    <span className="text-muted">Don't have an account? </span>
+                    <Link to="/owner/register" className="text-decoration-none fw-bold">
+                        Register
+                    </Link>
+                </div>
 
             </div>
 

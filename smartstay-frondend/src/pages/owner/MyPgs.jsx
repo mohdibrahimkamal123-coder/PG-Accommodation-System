@@ -15,6 +15,10 @@ const MyPgs = () => {
     const [showForm, setShowForm] = useState(false);
     const [search, setSearch] = useState("");
 
+    // Image file & preview state
+    const [imageFile, setImageFile] = useState(null);
+    const [imagePreview, setImagePreview] = useState("");
+
     const [formData, setFormData] = useState({
         ownerId: owner?.ownerId || "",
         pgName: "",
@@ -26,7 +30,8 @@ const MyPgs = () => {
         rentStarting: "",
         foodAvailable: false,
         wifiAvailable: false,
-        laundryAvailable: false
+        laundryAvailable: false,
+        imageUrl: "" // Existing image URL agar server se aa raha ho
     });
 
     useEffect(() => {
@@ -52,6 +57,15 @@ const MyPgs = () => {
         });
     };
 
+    // Image selection handler
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setImageFile(file);
+            setImagePreview(URL.createObjectURL(file)); // Local preview ke liye
+        }
+    };
+
     const resetForm = () => {
         setFormData({
             ownerId: owner?.ownerId || "",
@@ -64,29 +78,42 @@ const MyPgs = () => {
             rentStarting: "",
             foodAvailable: false,
             wifiAvailable: false,
-            laundryAvailable: false
+            laundryAvailable: false,
+            imageUrl: ""
         });
+        setImageFile(null);
+        setImagePreview("");
         setEditId(null);
         setShowForm(false);
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            if (editId) {
-                await updatePg(editId, formData);
-                alert("PG Updated Successfully");
-            } else {
-                await addPg(formData);
-                alert("PG Added Successfully");
-            }
-            resetForm();
-            loadPgs();
-        } catch (error) {
-            console.log(error);
+    e.preventDefault();
+    try {
+        // Debug
+        console.log("Form Data:", formData);
+        console.log("Image File:", imageFile);
+        if (editId) {
+            // Update PG
+            await updatePg(editId, formData);
+            alert("PG Updated Successfully");} 
+        else {
+            // Add PG
+            await addPg(formData, imageFile);
+            alert("PG Added Successfully");
+}
+        resetForm();
+        loadPgs();} 
+        catch (error) {
+        console.error(error);
+
+        if (error.response) {
+            alert(error.response.data);
+        } else {
             alert("Something went wrong");
         }
-    };
+    }
+};
 
     const handleEdit = (pg) => {
         setEditId(pg.pgId);
@@ -101,8 +128,13 @@ const MyPgs = () => {
             rentStarting: pg.rentStarting,
             foodAvailable: pg.foodAvailable,
             wifiAvailable: pg.wifiAvailable,
-            laundryAvailable: pg.laundryAvailable
+            laundryAvailable: pg.laundryAvailable,
+            imageUrl: pg.imageUrl || ""
         });
+        
+        // Agar pehle se koi image link hai to preview dikhana
+        setImagePreview(pg.imageUrl || "");
+        setImageFile(null);
         setShowForm(true);
     };
 
@@ -260,6 +292,31 @@ const MyPgs = () => {
                                         />
                                     </div>
 
+                                    {/* Image Input Section */}
+                                    <div className="col-md-6 mb-3">
+                                        <label className="form-label">Upload Image</label>
+                                        <input
+                                            type="file"
+                                            className="form-control"
+                                            accept="image/*"
+                                            onChange={handleImageChange}
+                                        />
+                                    </div>
+
+                                    {/* Image Preview Box */}
+                                    <div className="col-md-6 mb-3">
+                                        {imagePreview && (
+                                            <div>
+                                                <label className="form-label d-block">Preview</label>
+                                                <img
+                                                    src={imagePreview}
+                                                    alt="PG Preview"
+                                                    style={{ width: "120px", height: "80px", objectFit: "cover", borderRadius: "5px" }}
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+
                                     <div className="col-md-4 mb-3">
                                         <div className="form-check mt-4">
                                             <input
@@ -354,6 +411,7 @@ const MyPgs = () => {
                                 <thead className="table-dark">
                                     <tr>
                                         <th>ID</th>
+                                        <th>Image</th>
                                         <th>PG Name</th>
                                         <th>City</th>
                                         <th>Rent</th>
@@ -367,6 +425,13 @@ const MyPgs = () => {
                                     {filteredPgs.map((pg) => (
                                         <tr key={pg.pgId}>
                                             <td>{pg.pgId}</td>
+                                            <td>
+                                                <img
+                                                    src={pg.imageUrl || "https://via.placeholder.com/60"}
+                                                    alt={pg.pgName}
+                                                    style={{ width: "50px", height: "50px", objectFit: "cover", borderRadius: "5px" }}
+                                                />
+                                            </td>
                                             <td>{pg.pgName}</td>
                                             <td>{pg.city}</td>
                                             <td>₹ {pg.rentStarting}</td>
