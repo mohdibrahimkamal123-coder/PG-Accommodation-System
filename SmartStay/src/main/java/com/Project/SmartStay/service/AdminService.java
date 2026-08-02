@@ -3,6 +3,7 @@ package com.Project.SmartStay.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.Project.SmartStay.dto.AdminDashboardResponse;
@@ -13,7 +14,7 @@ import com.Project.SmartStay.dto.BookingStatusUpdateRequest;
 import com.Project.SmartStay.dto.ExportResponse;
 import com.Project.SmartStay.dto.ReportResponse;
 import com.Project.SmartStay.dto.RevenueResponse;
-
+import com.Project.SmartStay.dto.ReviewResponse;
 import com.Project.SmartStay.entity.Admin;
 import com.Project.SmartStay.entity.Booking;
 import com.Project.SmartStay.entity.Owner;
@@ -299,8 +300,44 @@ public class AdminService {
         return convertToBookingResponse(booking);
     }
 
-    public List<Review> getAllReviews() {
-        return reviewRepository.findAll();
+    public List<ReviewResponse> getAllReviews() {
+
+        List<Review> reviews = reviewRepository.findAll();
+
+        List<ReviewResponse> response = new ArrayList<>();
+
+        for (Review review : reviews) {
+
+            User user = userRepository.findById(review.getUserId()).orElse(null);
+
+            Pg pg = pgRepository.findById(review.getPgId()).orElse(null);
+
+            ReviewResponse dto = new ReviewResponse();
+
+            dto.setReviewId(review.getReviewId());
+            dto.setUserId(review.getUserId());
+            dto.setPgId(review.getPgId());
+            dto.setRating(review.getRating());
+            dto.setComment(review.getComment());
+            dto.setCreatedAt(review.getCreatedAt());
+
+            if (user != null) {
+                dto.setUserName(user.getFullName());
+            } else {
+                dto.setUserName("Unknown User");
+            }
+
+            if (pg != null) {
+                dto.setPgName(pg.getPgName());
+                dto.setCity(pg.getCity());
+            } else {
+                dto.setPgName("Unknown PG");
+            }
+
+            response.add(dto);
+        }
+
+        return response;
     }
     public String deleteReview(Long reviewId) {
         Review review = reviewRepository.findById(reviewId)

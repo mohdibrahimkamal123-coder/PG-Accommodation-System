@@ -15,6 +15,7 @@ import com.Project.SmartStay.service.AdminService;
 import java.util.List;
 import com.Project.SmartStay.dto.ReportResponse;
 import com.Project.SmartStay.dto.RevenueResponse;
+import com.Project.SmartStay.dto.ReviewResponse;
 import com.Project.SmartStay.dto.ExportResponse;
 import jakarta.validation.Valid;
 
@@ -122,7 +123,7 @@ public class AdminController {
         return adminService.updateBookingStatus(id, request);
     }
     @GetMapping("/reviews")
-    public List<Review> getAllReviews() {
+    public List<ReviewResponse> getAllReviews() {
         return adminService.getAllReviews();
     }
     @DeleteMapping("/reviews/{id}")
