@@ -6,6 +6,7 @@ import com.Project.SmartStay.dto.AdminDashboardResponse;
 import com.Project.SmartStay.dto.AdminLoginRequest;
 import com.Project.SmartStay.dto.AdminLoginResponse;
 import com.Project.SmartStay.dto.BookingResponse;
+import com.Project.SmartStay.dto.BookingStatusUpdateRequest;
 import com.Project.SmartStay.entity.Owner;
 import com.Project.SmartStay.entity.Pg;
 import com.Project.SmartStay.entity.Review;
@@ -15,6 +16,7 @@ import java.util.List;
 import com.Project.SmartStay.dto.ReportResponse;
 import com.Project.SmartStay.dto.RevenueResponse;
 import com.Project.SmartStay.dto.ExportResponse;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -112,6 +114,12 @@ public class AdminController {
     public String deleteBooking(
             @PathVariable Long id) {
         return adminService.deleteBooking(id);
+    }
+    @PutMapping("/bookings/status/{id}")
+    public BookingResponse updateBookingStatus(
+            @PathVariable Long id,
+            @Valid @RequestBody BookingStatusUpdateRequest request) {
+        return adminService.updateBookingStatus(id, request);
     }
     @GetMapping("/reviews")
     public List<Review> getAllReviews() {
