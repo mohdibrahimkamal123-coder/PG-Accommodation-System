@@ -5,55 +5,12 @@ import { getAllPgs } from "../services/pgService";
 import { addToWishlist, getWishlist, removeFromWishlist } from "../services/wishlistService";
 import Swal from 'sweetalert2';
 
-// Royalty-free modern room images for PG card previews
-const ROOM_IMAGES = [
-    "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=800&q=80"
-];
 
-// Popular Indian Cities Data
-const CITIES_DATA = [
-    { name: "Bangalore", stays: "3,400+ PGs", img: "https://images.unsplash.com/photo-1596176530529-78163a4f7af2?auto=format&fit=crop&w=500&q=80" },
-    { name: "Delhi", stays: "2,800+ PGs", img: "https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=500&q=80" },
-    { name: "Gurgaon", stays: "1,900+ PGs", img: "https://images.unsplash.com/photo-1605146769289-440113cc3d00?auto=format&fit=crop&w=500&q=80" },
-    { name: "Noida", stays: "1,400+ PGs", img: "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=500&q=80" },
-    { name: "Pune", stays: "2,200+ PGs", img: "https://images.unsplash.com/photo-1567157577867-05ccb1388e66?auto=format&fit=crop&w=500&q=80" },
-    { name: "Hyderabad", stays: "2,100+ PGs", img: "https://images.unsplash.com/photo-1605379399642-870262d3d051?auto=format&fit=crop&w=500&q=80" },
-    { name: "Mumbai", stays: "2,900+ PGs", img: "https://images.unsplash.com/photo-1570168007204-dfb528c6958f?auto=format&fit=crop&w=500&q=80" },
-    { name: "Chennai", stays: "1,600+ PGs", img: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=500&q=80" }
-];
+
+
 
 // Testimonials Data
-const TESTIMONIALS_DATA = [
-    {
-        name: "Aarav Sharma",
-        role: "Software Engineer",
-        city: "Bangalore",
-        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
-        rating: 5,
-        review: "SmartStay made finding a PG in HSR Layout completely hassle-free! The room matched the photos 100%, and moving in was seamless."
-    },
-    {
-        name: "Priya Patel",
-        role: "DU Student",
-        city: "Delhi (North Campus)",
-        avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80",
-        rating: 5,
-        review: "Safety was my top priority when moving from Gujarat. SmartStay verified stays gave me and my parents total peace of mind!"
-    },
-    {
-        name: "Rohan Verma",
-        role: "Analyst at Deloitte",
-        city: "Gurgaon",
-        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
-        rating: 5,
-        review: "No broker fees and zero deposit traps. I booked my Cyber City stay in just 10 minutes directly through SmartStay!"
-    }
-];
+
 
 // FAQ Data
 const FAQ_ITEMS = [
@@ -1437,18 +1394,36 @@ const Home = () => {
             {/* Sticky Glassmorphism Navbar */}
             <nav className="smartstay-navbar navbar navbar-expand-lg px-4 py-3">
                 <div className="container">
-                    <a className="brand-logo d-flex align-items-center gap-2" href="#">
-                        <img 
-                            src="/logo.jpg.png" 
-                            alt="SmartStay Logo" 
-                            onError={(e) => {
-                                e.target.onerror = null;
-                                e.target.src = "/logo.jpg";
-                            }}
-                            style={{ height: "60px", width: "auto", borderRadius: "8px", objectFit: "contain" }}
-                        />
-                        <span style={{ fontWeight: 800, fontSize: "1.35rem", color: "#0f172a" }}></span>
-                    </a>
+
+ <a className="brand-logo d-flex align-items-center gap-3" href="#">
+            {/* <img 
+                src="/logo.jpg.png" 
+                alt="SmartStay Logo" 
+                onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = "/logo.jpg";
+                }}
+                style={{ 
+                    height: "75px",           // Bada kiya
+                    width: "auto", 
+                    borderRadius: "14px",
+                    objectFit: "contain",
+                    boxShadow: "0 4px 20px rgba(99, 102, 241, 0.2)"
+                }}
+            /> */}
+            <span style={{ 
+                fontWeight: 800, 
+                fontSize: "1.8rem",           // Bada kiya
+                color: "#0f172a",
+                letterSpacing: "-0.02em",
+                background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent"
+            }}>
+                SmartStay
+            </span>
+        </a>
+
 
                     <div className="d-none d-md:flex align-items-center gap-4 ms-auto me-4">
                         <a href="#why-choose" className="nav-link-custom">Why Us</a>
@@ -2021,7 +1996,7 @@ const Home = () => {
                         <div className="col-lg-4 col-md-6">
                             <a className="brand-logo" href="#">
                                 <div className="brand-icon">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <svg width="40" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                         <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
                                         <polyline points="9 22 9 12 15 12 15 22" />
                                     </svg>

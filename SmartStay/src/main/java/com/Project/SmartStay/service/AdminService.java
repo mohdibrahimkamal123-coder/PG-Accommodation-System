@@ -3,16 +3,18 @@ package com.Project.SmartStay.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.Project.SmartStay.dto.AdminDashboardResponse;
 import com.Project.SmartStay.dto.AdminLoginRequest;
 import com.Project.SmartStay.dto.AdminLoginResponse;
 import com.Project.SmartStay.dto.BookingResponse;
+import com.Project.SmartStay.dto.BookingStatusUpdateRequest;
 import com.Project.SmartStay.dto.ExportResponse;
 import com.Project.SmartStay.dto.ReportResponse;
 import com.Project.SmartStay.dto.RevenueResponse;
-
+import com.Project.SmartStay.dto.ReviewResponse;
 import com.Project.SmartStay.entity.Admin;
 import com.Project.SmartStay.entity.Booking;
 import com.Project.SmartStay.entity.Owner;
@@ -32,7 +34,6 @@ import com.Project.SmartStay.repository.ReviewRepository;
 
 @Service
 public class AdminService {
-
 
     @Autowired
     private AdminRepository adminRepository;
@@ -54,7 +55,11 @@ public class AdminService {
 
     @Autowired
     private ReviewRepository reviewRepository;
-    
+
+    // Statuses an admin is allowed to set on a booking
+    private static final List<String> VALID_BOOKING_STATUSES =
+            List.of("PENDING", "APPROVED", "REJECTED", "COMPLETED", "CANCELLED");
+
     public AdminLoginResponse login(AdminLoginRequest request) {
         Admin admin = adminRepository.findByEmail(request.getEmail())
                 .orElseThrow(() ->
@@ -81,6 +86,10 @@ public class AdminService {
     public AdminDashboardResponse getStatistics() {
         return getDashboard();
     }
+
+    // =====================================================
+    // ADMIN : Users - block / unblock
+    // =====================================================
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
@@ -112,120 +121,71 @@ public class AdminService {
         userRepository.delete(user);
         return "User Deleted Successfully";
     }
+
     public List<Owner> getAllOwners() {
-
         return ownerRepository.findAll();
-
     }
     public Owner getOwnerById(Long id) {
-
         return ownerRepository.findById(id)
-
                 .orElseThrow(() ->
-
                         new RuntimeException("Owner Not Found"));
-
     }
     public String approveOwner(Long id) {
-
         Owner owner = ownerRepository.findById(id)
-
                 .orElseThrow(() ->
-
                         new RuntimeException("Owner Not Found"));
-
         owner.setApproved(true);
-
         ownerRepository.save(owner);
-
         return "Owner Approved Successfully";
-
     }
     public String rejectOwner(Long id) {
-
         Owner owner = ownerRepository.findById(id)
-
                 .orElseThrow(() ->
-
                         new RuntimeException("Owner Not Found"));
-
         owner.setApproved(false);
-
         ownerRepository.save(owner);
-
         return "Owner Rejected Successfully";
-
     }
     public String deleteOwner(Long id) {
-
         Owner owner = ownerRepository.findById(id)
-
                 .orElseThrow(() ->
-
                         new RuntimeException("Owner Not Found"));
-
         ownerRepository.delete(owner);
-
         return "Owner Deleted Successfully";
-
     }
+
     public List<Pg> getAllPgs() {
-
         return pgRepository.findAll();
-
     }
     public Pg getPgById(Long id) {
-
         return pgRepository.findById(id)
-
                 .orElseThrow(() ->
-
                         new RuntimeException("PG Not Found"));
-
     }
     public String approvePg(Long id) {
-
         Pg pg = pgRepository.findById(id)
-
                 .orElseThrow(() ->
-
                         new RuntimeException("PG Not Found"));
-
         pg.setApproved(true);
-
         pgRepository.save(pg);
-
         return "PG Approved Successfully";
-
     }
     public String rejectPg(Long id) {
-
         Pg pg = pgRepository.findById(id)
-
                 .orElseThrow(() ->
-
                         new RuntimeException("PG Not Found"));
-
         pg.setApproved(false);
-
         pgRepository.save(pg);
-
         return "PG Rejected Successfully";
-
     }
     public String deletePg(Long id) {
-
         Pg pg = pgRepository.findById(id)
-
                 .orElseThrow(() ->
-
                         new RuntimeException("PG Not Found"));
-
         pgRepository.delete(pg);
-
         return "PG Deleted Successfully";
-
     }
+
     private BookingResponse convertToBookingResponse(Booking booking) {
 
         Room room = roomRepository.findById(booking.getRoomId())
@@ -236,11 +196,18 @@ public class AdminService {
                 .orElseThrow(() ->
                         new RuntimeException("PG Not Found"));
 
+        User user = userRepository.findById(booking.getUserId())
+                .orElse(null);
+
         return new BookingResponse(
                 booking.getBookingId(),
                 booking.getBookingNumber(),
                 booking.getBookingDate(),
                 booking.getStatus(),
+
+                booking.getUserId(),
+                user != null ? user.getFullName() : "Unknown User",
+
                 booking.getMoveInDate(),
                 booking.getExpectedStayMonths(),
                 booking.getEmergencyContact(),
@@ -260,6 +227,10 @@ public class AdminService {
                 pg.getState()
         );
     }
+
+    // =====================================================
+    // ADMIN : Bookings - view / delete / status update
+    // =====================================================
     public List<BookingResponse> getAllBookings() {
         List<Booking> bookings = bookingRepository.findAll();
         return bookings.stream()
@@ -284,8 +255,96 @@ public class AdminService {
         bookingRepository.delete(booking);
         return "Booking Deleted Successfully";
     }
-    public List<Review> getAllReviews() {
-        return reviewRepository.findAll();
+
+    /**
+     * Admin updates a booking's status (e.g. PENDING, APPROVED, REJECTED,
+     * COMPLETED, CANCELLED). If the new status frees up the room (REJECTED /
+     * CANCELLED) the bed count is restored; if a previously freed booking is
+     * reactivated, a bed is re-reserved (fails if none are available).
+     */
+    public BookingResponse updateBookingStatus(Long bookingId, BookingStatusUpdateRequest request) {
+
+        if (request == null || request.getStatus() == null || request.getStatus().isBlank()) {
+            throw new RuntimeException("Status is required");
+        }
+
+        String newStatus = request.getStatus().trim().toUpperCase();
+
+        if (!VALID_BOOKING_STATUSES.contains(newStatus)) {
+            throw new RuntimeException(
+                    "Invalid Status. Allowed values: " + VALID_BOOKING_STATUSES);
+        }
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() ->
+                        new RuntimeException("Booking Not Found"));
+
+        String previousStatus = booking.getStatus();
+
+        boolean wasInactive = "REJECTED".equals(previousStatus) || "CANCELLED".equals(previousStatus);
+        boolean isNowInactive = "REJECTED".equals(newStatus) || "CANCELLED".equals(newStatus);
+
+        if (!wasInactive && isNowInactive) {
+            // Booking is being rejected/cancelled -> free the bed
+            Room room = roomRepository.findById(booking.getRoomId())
+                    .orElseThrow(() -> new RuntimeException("Room Not Found"));
+            room.setAvailableBeds(room.getAvailableBeds() + 1);
+            roomRepository.save(room);
+        } else if (wasInactive && !isNowInactive) {
+            // Booking is being reactivated -> re-reserve a bed
+            Room room = roomRepository.findById(booking.getRoomId())
+                    .orElseThrow(() -> new RuntimeException("Room Not Found"));
+            if (room.getAvailableBeds() <= 0) {
+                throw new RuntimeException("Cannot reactivate booking: No Beds Available");
+            }
+            room.setAvailableBeds(room.getAvailableBeds() - 1);
+            roomRepository.save(room);
+        }
+
+        booking.setStatus(newStatus);
+        bookingRepository.save(booking);
+
+        return convertToBookingResponse(booking);
+    }
+
+    public List<ReviewResponse> getAllReviews() {
+
+        List<Review> reviews = reviewRepository.findAll();
+
+        List<ReviewResponse> response = new ArrayList<>();
+
+        for (Review review : reviews) {
+
+            User user = userRepository.findById(review.getUserId()).orElse(null);
+
+            Pg pg = pgRepository.findById(review.getPgId()).orElse(null);
+
+            ReviewResponse dto = new ReviewResponse();
+
+            dto.setReviewId(review.getReviewId());
+            dto.setUserId(review.getUserId());
+            dto.setPgId(review.getPgId());
+            dto.setRating(review.getRating());
+            dto.setComment(review.getComment());
+            dto.setCreatedAt(review.getCreatedAt());
+
+            if (user != null) {
+                dto.setUserName(user.getFullName());
+            } else {
+                dto.setUserName("Unknown User");
+            }
+
+            if (pg != null) {
+                dto.setPgName(pg.getPgName());
+                dto.setCity(pg.getCity());
+            } else {
+                dto.setPgName("Unknown PG");
+            }
+
+            response.add(dto);
+        }
+
+        return response;
     }
     public String deleteReview(Long reviewId) {
         Review review = reviewRepository.findById(reviewId)
@@ -294,50 +353,52 @@ public class AdminService {
         reviewRepository.delete(review);
         return "Review Deleted Successfully";
     }
- // Reports
- public ReportResponse getReports() {
-     return new ReportResponse(
-             userRepository.count(),
-             ownerRepository.count(),
-             pgRepository.count(),
-             roomRepository.count(),
-             bookingRepository.count(),
-             reviewRepository.count()
-     );
-   }
-//Revenue
- public RevenueResponse getRevenue() {
 
-	    Double totalRevenue = 0.0;
+    // Reports
+    public ReportResponse getReports() {
+        return new ReportResponse(
+                userRepository.count(),
+                ownerRepository.count(),
+                pgRepository.count(),
+                roomRepository.count(),
+                bookingRepository.count(),
+                reviewRepository.count()
+        );
+    }
 
-	    List<Booking> bookings = bookingRepository.findAll();
+    // Revenue
+    public RevenueResponse getRevenue() {
 
-	    for (Booking booking : bookings) {
+        Double totalRevenue = 0.0;
 
-	        Room room = roomRepository.findById(booking.getRoomId())
-	                .orElseThrow(() ->
-	                        new RuntimeException("Room Not Found"));
+        List<Booking> bookings = bookingRepository.findAll();
 
-	        totalRevenue += room.getRent();
-	    }
+        for (Booking booking : bookings) {
 
-	    return new RevenueResponse(
-	            totalRevenue,
-	            bookingRepository.count(),
-	            userRepository.count(),
-	            pgRepository.count()
-	    );
-	}
-//Export Data
-public ExportResponse exportData() {
- return new ExportResponse(
-         userRepository.findAll(),
-         ownerRepository.findAll(),
-         pgRepository.findAll(),
-         roomRepository.findAll(),
-         bookingRepository.findAll(),
-         reviewRepository.findAll());
-}
+            Room room = roomRepository.findById(booking.getRoomId())
+                    .orElseThrow(() ->
+                            new RuntimeException("Room Not Found"));
 
-    
+            totalRevenue += room.getRent();
+        }
+
+        return new RevenueResponse(
+                totalRevenue,
+                bookingRepository.count(),
+                userRepository.count(),
+                pgRepository.count()
+        );
+    }
+
+    // Export Data
+    public ExportResponse exportData() {
+        return new ExportResponse(
+                userRepository.findAll(),
+                ownerRepository.findAll(),
+                pgRepository.findAll(),
+                roomRepository.findAll(),
+                bookingRepository.findAll(),
+                reviewRepository.findAll());
+    }
+
 }

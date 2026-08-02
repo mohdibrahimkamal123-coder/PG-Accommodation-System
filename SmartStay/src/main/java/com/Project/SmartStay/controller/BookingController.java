@@ -35,7 +35,7 @@ public class BookingController {
     }
 
     @GetMapping
-    public List<Booking> getAllBookings() {
+    public List<BookingResponse> getAllBookings() {
         return bookingService.getAllBookings();
     }
 
