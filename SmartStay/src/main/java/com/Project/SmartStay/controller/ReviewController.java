@@ -1,6 +1,7 @@
 package com.Project.SmartStay.controller;
 
 import java.util.List;
+import com.Project.SmartStay.dto.ReviewResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -23,10 +24,18 @@ public class ReviewController {
     }
 
     @GetMapping("/pg/{pgId}")
-    public List<Review> getReviewsByPg(@PathVariable Long pgId) {
-        return reviewService.getReviewsByPg(pgId);
-    }
+    public List<ReviewResponse> getReviewsByPg(@PathVariable Long pgId) {
 
+        return reviewService.getReviewsByPg(pgId);
+
+    }
+    
+    @GetMapping("/top")
+    public List<ReviewResponse> getTopReviews() {
+
+        return reviewService.getTopReviews();
+
+    }
     @GetMapping("/user/{userId}")
     public List<Review> getReviewsByUser(@PathVariable Long userId) {
         return reviewService.getReviewsByUser(userId);

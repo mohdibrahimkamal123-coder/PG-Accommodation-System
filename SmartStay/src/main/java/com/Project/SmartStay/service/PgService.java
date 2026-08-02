@@ -1,6 +1,7 @@
 package com.Project.SmartStay.service;
 
 import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,9 +15,20 @@ public class PgService {
 
     @Autowired
     private PgRepository pgRepository;
+    
+    @Autowired
+    private FileStorageService fileStorageService;
 
     // Add PG
-    public Pg addPg(Pg pg) {
+    public Pg addPg(Pg pg, MultipartFile image) {
+
+        if (image != null && !image.isEmpty()) {
+
+            String fileName = fileStorageService.saveImage(image);
+
+            pg.setImageUrl(fileName);
+        }
+
         return pgRepository.save(pg);
     }
 
@@ -44,25 +56,40 @@ public class PgService {
     }
 
     // Update PG
-    public Pg updatePg(Long id, Pg updatedPg) {
+    public Pg updatePg(Long id,
+            Pg updatedPg,
+            MultipartFile image) {
 
-        Pg pg = pgRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("PG Not Found"));
+Pg pg = pgRepository.findById(id)
+     .orElseThrow(() ->
+             new ResourceNotFoundException("PG Not Found"));
 
-        pg.setPgName(updatedPg.getPgName());
-        pg.setDescription(updatedPg.getDescription());
-        pg.setAddress(updatedPg.getAddress());
-        pg.setCity(updatedPg.getCity());
-        pg.setState(updatedPg.getState());
-        pg.setPincode(updatedPg.getPincode());
-        pg.setRentStarting(updatedPg.getRentStarting());
-        pg.setFoodAvailable(updatedPg.getFoodAvailable());
-        pg.setWifiAvailable(updatedPg.getWifiAvailable());
-        pg.setLaundryAvailable(updatedPg.getLaundryAvailable());
+pg.setPgName(updatedPg.getPgName());
+pg.setDescription(updatedPg.getDescription());
+pg.setAddress(updatedPg.getAddress());
+pg.setCity(updatedPg.getCity());
+pg.setState(updatedPg.getState());
+pg.setPincode(updatedPg.getPincode());
+pg.setRentStarting(updatedPg.getRentStarting());
+pg.setFoodAvailable(updatedPg.getFoodAvailable());
+pg.setWifiAvailable(updatedPg.getWifiAvailable());
+pg.setLaundryAvailable(updatedPg.getLaundryAvailable());
+pg.setGenderType(updatedPg.getGenderType());
 
-        return pgRepository.save(pg);
-    }
+// New Image Upload
+if (image != null && !image.isEmpty()) {
+
+ // Delete old image
+ fileStorageService.deleteImage(pg.getImageUrl());
+
+ // Save new image
+ String fileName = fileStorageService.saveImage(image);
+
+ pg.setImageUrl(fileName);
+}
+
+return pgRepository.save(pg);
+}
 
     // Delete PG
     public String deletePg(Long id) {
@@ -71,6 +98,10 @@ public class PgService {
                 .orElseThrow(() ->
                         new ResourceNotFoundException("PG Not Found"));
 
+        // Delete image
+        fileStorageService.deleteImage(pg.getImageUrl());
+
+        // Delete PG
         pgRepository.delete(pg);
 
         return "PG Deleted Successfully";
@@ -97,7 +128,9 @@ public class PgService {
 
     }
     public List<Pg> getAllPgs() {
-        return pgRepository.findAll();
+
+        return pgRepository.findByApprovedTrue();
+
     }
     public List<Pg> getAllPgs1() {
 

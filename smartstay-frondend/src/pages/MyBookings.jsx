@@ -62,45 +62,108 @@ const MyBookings = () => {
         ) : (
           <table className="table table-bordered table-hover">
 
-            <thead className="table-dark">
-              <tr>
-                <th>ID</th>
-                <th>PG Name</th>
-                <th>Room Type</th>
-                <th>City</th>
-                <th>Rent</th>
-                <th>Status</th>
-                <th>Booking Date</th>
-                <th>Action</th>
-              </tr>
-            </thead>
+<thead className="table-dark">
+  <tr>
+    <th>Booking No.</th>
+    <th>PG Name</th>
+    <th>Room</th>
+    <th>Move-In</th>
+    <th>Stay</th>
+    <th>Rent</th>
+    <th>Status</th>
+    <th>Booking Date</th>
+    <th>Action</th>
+  </tr>
+</thead>
 
-            <tbody>
-              {bookings.map((booking) => (
-                <tr key={booking.bookingId}>
-                  <td>{booking.bookingId}</td>
-                  <td>{booking.pgName}</td>
-                  <td>{booking.roomType}</td>
-                  <td>{booking.city}</td>
-                  <td>₹{booking.rent}</td>
-                  <td>{booking.status}</td>
-                  <td>
-                    {new Date(booking.bookingDate).toLocaleDateString()}
-                  </td>
-                  <td>
-                    <button
-                      className="btn btn-danger btn-sm"
-                      onClick={() =>
-                        handleCancel(booking.bookingId)
-                      }
-                    >
-                      Cancel
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+<tbody>
+  {bookings.map((booking) => (
+    <tr key={booking.bookingId}>
 
+      <td>
+        <strong>{booking.bookingNumber}</strong>
+      </td>
+
+      <td>
+        <strong>{booking.pgName}</strong>
+        <br />
+        <small className="text-muted">
+          {booking.city}
+        </small>
+      </td>
+
+      <td>
+        {booking.roomNumber}
+        <br />
+        <small className="text-muted">
+          {booking.roomType}
+        </small>
+      </td>
+
+      <td>
+        {booking.moveInDate
+          ? new Date(booking.moveInDate).toLocaleDateString()
+          : "-"}
+      </td>
+
+      <td>
+        {booking.expectedStayMonths} Month(s)
+      </td>
+
+      <td>
+        ₹{booking.rent}
+      </td>
+
+      <td>
+
+        <span
+          className={
+            booking.status === "APPROVED"
+              ? "badge bg-success"
+              : booking.status === "REJECTED"
+              ? "badge bg-danger"
+              : booking.status === "COMPLETED"
+              ? "badge bg-primary"
+              : "badge bg-warning text-dark"
+          }
+        >
+          {booking.status}
+        </span>
+
+      </td>
+
+      <td>
+        {new Date(booking.bookingDate).toLocaleDateString()}
+      </td>
+
+      <td>
+
+        {booking.status === "PENDING" ||
+        booking.status === "APPROVED" ? (
+
+          <button
+            className="btn btn-danger btn-sm"
+            onClick={() => handleCancel(booking.bookingId)}
+          >
+            Cancel
+          </button>
+
+        ) : (
+
+          <button
+            className="btn btn-secondary btn-sm"
+            disabled
+          >
+            Closed
+          </button>
+
+        )}
+
+      </td>
+
+    </tr>
+  ))}
+</tbody>
           </table>
         )}
 

@@ -9,6 +9,8 @@ import UserDashboard from "../pages/UserDashboard";
 import Profile from "../pages/Profile";
 import ProtectedRoute from "../components/ProtectedRoute";
 import MyBookings from "../pages/MyBookings";
+import Wishlist from "../pages/Wishlist";
+import AddPg from '../pages/owner/AddPg';
 
 function AppRoutes() {
   return (
@@ -20,6 +22,7 @@ function AppRoutes() {
         <Route path="/register" element={<Register />} />
         <Route path="/pgs" element={<PgListing />} />
         <Route path="/pg/:id" element={<PgDetails />} />
+        <Route path="/owner/add-pg" element={<AddPg />} />
 
         <Route
           path="/dashboard"
@@ -43,6 +46,14 @@ function AppRoutes() {
   element={
     <ProtectedRoute>
       <MyBookings />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/wishlist"
+  element={
+    <ProtectedRoute>
+      <Wishlist />
     </ProtectedRoute>
   }
 />

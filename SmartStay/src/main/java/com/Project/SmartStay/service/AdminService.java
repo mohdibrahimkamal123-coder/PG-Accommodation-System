@@ -186,19 +186,32 @@ public class AdminService {
     }
 
     private BookingResponse convertToBookingResponse(Booking booking) {
+
         Room room = roomRepository.findById(booking.getRoomId())
                 .orElseThrow(() ->
                         new RuntimeException("Room Not Found"));
+
         Pg pg = pgRepository.findById(room.getPgId())
                 .orElseThrow(() ->
                         new RuntimeException("PG Not Found"));
+
         return new BookingResponse(
                 booking.getBookingId(),
+                booking.getBookingNumber(),
                 booking.getBookingDate(),
                 booking.getStatus(),
+                booking.getMoveInDate(),
+                booking.getExpectedStayMonths(),
+                booking.getEmergencyContact(),
+                booking.getIdProofType(),
+                booking.getIdProofNumber(),
+                booking.getSpecialRequest(),
+
                 room.getRoomId(),
+                room.getRoomNumber(),
                 room.getRoomType(),
                 room.getRent(),
+
                 pg.getPgId(),
                 pg.getPgName(),
                 pg.getAddress(),

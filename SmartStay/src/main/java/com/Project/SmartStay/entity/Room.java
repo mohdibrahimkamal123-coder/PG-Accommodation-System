@@ -35,8 +35,20 @@ public class Room {
     @NotNull(message = "Rent is required")
     @Positive(message = "Rent must be greater than 0")
     private Double rent;
+    
+    @Column(name = "room_number")
+    private String roomNumber;
+    
 
-    public Room() {
+    public String getRoomNumber() {
+		return roomNumber;
+	}
+
+	public void setRoomNumber(String roomNumber) {
+		this.roomNumber = roomNumber;
+	}
+
+	public Room() {
     }
 
     public Long getRoomId() {

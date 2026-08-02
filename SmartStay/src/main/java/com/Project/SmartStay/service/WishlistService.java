@@ -1,11 +1,15 @@
 package com.Project.SmartStay.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.Project.SmartStay.dto.WishlistResponse;
+import com.Project.SmartStay.entity.Pg;
 import com.Project.SmartStay.entity.Wishlist;
+import com.Project.SmartStay.repository.PgRepository;
 import com.Project.SmartStay.repository.WishlistRepository;
 
 @Service
@@ -13,6 +17,9 @@ public class WishlistService {
 
     @Autowired
     private WishlistRepository wishlistRepository;
+
+    @Autowired
+    private PgRepository pgRepository;
 
     // Add PG to Wishlist
     public Wishlist addToWishlist(Wishlist wishlist) {
@@ -29,9 +36,34 @@ public class WishlistService {
     }
 
     // Get Wishlist by User
-    public List<Wishlist> getWishlistByUser(Long userId) {
+    public List<WishlistResponse> getWishlistByUser(Long userId) {
 
-        return wishlistRepository.findByUserId(userId);
+        List<Wishlist> wishlist = wishlistRepository.findByUserId(userId);
+
+        List<WishlistResponse> response = new ArrayList<>();
+
+        for (Wishlist item : wishlist) {
+
+            Pg pg = pgRepository.findById(item.getPgId()).orElse(null);
+
+            if (pg != null) {
+
+                WishlistResponse dto = new WishlistResponse();
+
+                dto.setWishlistId(item.getWishlistId());
+                dto.setPgId(pg.getPgId());
+                dto.setPgName(pg.getPgName());
+                dto.setCity(pg.getCity());
+                dto.setRentStarting(pg.getRentStarting());
+                dto.setRating(pg.getRating());
+
+                response.add(dto);
+
+            }
+
+        }
+
+        return response;
 
     }
 
