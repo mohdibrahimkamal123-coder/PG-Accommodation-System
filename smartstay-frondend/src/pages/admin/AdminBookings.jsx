@@ -2,7 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
+<<<<<<< HEAD
 import { getAllBookings, deleteBooking} from '../../services/adminService';
+=======
+import { getAllBookings, deleteBooking } from '../../services/adminService';
+>>>>>>> 3a35031 (push)
 
 const AdminBookings = () => {
     const [bookings, setBookings] = useState([]);
@@ -80,7 +84,11 @@ const AdminBookings = () => {
         const searchMatch = 
             booking.userName?.toLowerCase().includes(search.toLowerCase()) ||
             booking.pgName?.toLowerCase().includes(search.toLowerCase()) ||
+<<<<<<< HEAD
             booking.bookingId?.toString().includes(search);
+=======
+            booking.id?.toString().includes(search);
+>>>>>>> 3a35031 (push)
         
         if (filter === 'ALL') return searchMatch;
         return searchMatch && booking.status?.toLowerCase() === filter.toLowerCase();
@@ -211,11 +219,19 @@ const AdminBookings = () => {
                         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                             <thead>
                                 <tr>
+<<<<<<< HEAD
                                     <th style={{ padding: '16px 12px', fontSize: '0.7rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '2px solid #f1f5f9', textAlign: 'left', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>BOOKING ID</th>
                                     <th style={{ padding: '16px 12px', fontSize: '0.7rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '2px solid #f1f5f9', textAlign: 'left', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>User</th>
                                     <th style={{ padding: '16px 12px', fontSize: '0.7rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '2px solid #f1f5f9', textAlign: 'left', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>PG</th>
                                     <th style={{ padding: '16px 12px', fontSize: '0.7rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '2px solid #f1f5f9', textAlign: 'left', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Check In</th>
                                     <th style={{ padding: '16px 12px', fontSize: '0.7rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '2px solid #f1f5f9', textAlign: 'left', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Months</th>
+=======
+                                    <th style={{ padding: '16px 12px', fontSize: '0.7rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '2px solid #f1f5f9', textAlign: 'left', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>ID</th>
+                                    <th style={{ padding: '16px 12px', fontSize: '0.7rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '2px solid #f1f5f9', textAlign: 'left', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>User</th>
+                                    <th style={{ padding: '16px 12px', fontSize: '0.7rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '2px solid #f1f5f9', textAlign: 'left', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>PG</th>
+                                    <th style={{ padding: '16px 12px', fontSize: '0.7rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '2px solid #f1f5f9', textAlign: 'left', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Check In</th>
+                                    <th style={{ padding: '16px 12px', fontSize: '0.7rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '2px solid #f1f5f9', textAlign: 'left', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Check Out</th>
+>>>>>>> 3a35031 (push)
                                     <th style={{ padding: '16px 12px', fontSize: '0.7rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '2px solid #f1f5f9', textAlign: 'left', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Status</th>
                                     <th style={{ padding: '16px 12px', fontSize: '0.7rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '2px solid #f1f5f9', textAlign: 'left', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Actions</th>
                                 </tr>
@@ -224,12 +240,21 @@ const AdminBookings = () => {
                                 {filteredBookings.map((booking) => {
                                     const statusInfo = getStatusBadge(booking.status);
                                     return (
+<<<<<<< HEAD
                                         <tr key={booking.bookingId} style={{ transition: 'all 0.2s ease' }} onMouseEnter={(e) => e.currentTarget.style.background = '#f8fafc'} onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
                                             <td style={{ padding: '16px 12px', borderBottom: '1px solid #f8fafc', verticalAlign: 'middle', fontWeight: 700, color: '#0f172a', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>#{booking.bookingNumber}</td>
                                             <td style={{ padding: '16px 12px', borderBottom: '1px solid #f8fafc', verticalAlign: 'middle', fontWeight: 600, color: '#0f172a', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{booking.userName || 'N/A'}</td>
                                             <td style={{ padding: '16px 12px', borderBottom: '1px solid #f8fafc', verticalAlign: 'middle', color: '#475569', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{booking.pgName || 'N/A'}</td>
                                             <td style={{ padding: '16px 12px', borderBottom: '1px solid #f8fafc', verticalAlign: 'middle', color: '#475569', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{booking.moveInDate || 'N/A'}</td>
                                             <td style={{ padding: '16px 12px', borderBottom: '1px solid #f8fafc', verticalAlign: 'middle', color: '#475569', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{booking.expectedStayMonths || 'N/A'}</td>
+=======
+                                        <tr key={booking.id} style={{ transition: 'all 0.2s ease' }} onMouseEnter={(e) => e.currentTarget.style.background = '#f8fafc'} onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
+                                            <td style={{ padding: '16px 12px', borderBottom: '1px solid #f8fafc', verticalAlign: 'middle', fontWeight: 700, color: '#0f172a', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>#{booking.id}</td>
+                                            <td style={{ padding: '16px 12px', borderBottom: '1px solid #f8fafc', verticalAlign: 'middle', fontWeight: 600, color: '#0f172a', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{booking.userName || 'N/A'}</td>
+                                            <td style={{ padding: '16px 12px', borderBottom: '1px solid #f8fafc', verticalAlign: 'middle', color: '#475569', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{booking.pgName || 'N/A'}</td>
+                                            <td style={{ padding: '16px 12px', borderBottom: '1px solid #f8fafc', verticalAlign: 'middle', color: '#475569', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{booking.checkIn || 'N/A'}</td>
+                                            <td style={{ padding: '16px 12px', borderBottom: '1px solid #f8fafc', verticalAlign: 'middle', color: '#475569', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{booking.checkOut || 'N/A'}</td>
+>>>>>>> 3a35031 (push)
                                             <td style={{ padding: '16px 12px', borderBottom: '1px solid #f8fafc', verticalAlign: 'middle' }}>
                                                 <span style={{ 
                                                     display: 'inline-flex', 
@@ -248,7 +273,11 @@ const AdminBookings = () => {
                                             </td>
                                             <td style={{ padding: '16px 12px', borderBottom: '1px solid #f8fafc', verticalAlign: 'middle' }}>
                                                 <button 
+<<<<<<< HEAD
                                                     onClick={() => handleDelete(booking.bookingId)} 
+=======
+                                                    onClick={() => handleDelete(booking.id)} 
+>>>>>>> 3a35031 (push)
                                                     style={{ 
                                                         display: 'inline-flex', 
                                                         alignItems: 'center', 

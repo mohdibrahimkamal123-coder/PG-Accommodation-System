@@ -1491,6 +1491,13 @@ const Home = () => {
                                 </div>
                             )}
                         </div>
+<<<<<<< HEAD
+=======
+
+                        {/* <a href="#" className="btn-gradient-primary">
+                            List your PG
+                        </a> */}
+>>>>>>> 3a35031 (push)
                     </div>
                 </div>
             </nav>
