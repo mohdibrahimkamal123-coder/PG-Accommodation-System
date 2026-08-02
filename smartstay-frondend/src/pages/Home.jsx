@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { getAllPgs } from "../services/pgService";
@@ -13,6 +13,46 @@ const ROOM_IMAGES = [
     "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=800&q=80",
     "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=800&q=80",
     "https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=800&q=80"
+];
+
+// Popular Indian Cities Data
+const CITIES_DATA = [
+    { name: "Bangalore", stays: "3,400+ PGs", img: "https://images.unsplash.com/photo-1596176530529-78163a4f7af2?auto=format&fit=crop&w=500&q=80" },
+    { name: "Delhi", stays: "2,800+ PGs", img: "https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=500&q=80" },
+    { name: "Gurgaon", stays: "1,900+ PGs", img: "https://images.unsplash.com/photo-1605146769289-440113cc3d00?auto=format&fit=crop&w=500&q=80" },
+    { name: "Noida", stays: "1,400+ PGs", img: "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=500&q=80" },
+    { name: "Pune", stays: "2,200+ PGs", img: "https://images.unsplash.com/photo-1567157577867-05ccb1388e66?auto=format&fit=crop&w=500&q=80" },
+    { name: "Hyderabad", stays: "2,100+ PGs", img: "https://images.unsplash.com/photo-1605379399642-870262d3d051?auto=format&fit=crop&w=500&q=80" },
+    { name: "Mumbai", stays: "2,900+ PGs", img: "https://images.unsplash.com/photo-1570168007204-dfb528c6958f?auto=format&fit=crop&w=500&q=80" },
+    { name: "Chennai", stays: "1,600+ PGs", img: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=500&q=80" }
+];
+
+// Testimonials Data
+const TESTIMONIALS_DATA = [
+    {
+        name: "Aarav Sharma",
+        role: "Software Engineer",
+        city: "Bangalore",
+        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
+        rating: 5,
+        review: "SmartStay made finding a PG in HSR Layout completely hassle-free! The room matched the photos 100%, and moving in was seamless."
+    },
+    {
+        name: "Priya Patel",
+        role: "DU Student",
+        city: "Delhi (North Campus)",
+        avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80",
+        rating: 5,
+        review: "Safety was my top priority when moving from Gujarat. SmartStay verified stays gave me and my parents total peace of mind!"
+    },
+    {
+        name: "Rohan Verma",
+        role: "Analyst at Deloitte",
+        city: "Gurgaon",
+        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
+        rating: 5,
+        review: "No broker fees and zero deposit traps. I booked my Cyber City stay in just 10 minutes directly through SmartStay!"
+    }
 ];
 
 // FAQ Data
@@ -44,49 +84,39 @@ const Home = () => {
     const [loading, setLoading] = useState(true);
     const [activeFaq, setActiveFaq] = useState(null);
     const [isLoginDropdownOpen, setIsLoginDropdownOpen] = useState(false);
+    const dropdownRef = useRef(null);
     const [wishlist, setWishlist] = useState([]);
-    
+
     const user = JSON.parse(localStorage.getItem("user"));
 
     // Load wishlist when component mounts
     useEffect(() => {
-        if (user) {
+        if (user && user.userId) {
             loadWishlist();
         }
-    }, [user]);
+    }, []);
 
-    // Load PGs when component mounts
     useEffect(() => {
         loadPgs();
     }, []);
 
-    const loadPgs = async () => {
-        try {
-            const data = await getAllPgs();
-            setPgs(data);
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     const loadWishlist = async () => {
         try {
-            const data = await getWishlist(user.userId);
-            setWishlist(data);
+            if (user && user.userId) {
+                const data = await getWishlist(user.userId);
+                setWishlist(data);
+            }
         } catch (err) {
             console.log(err);
         }
     };
 
     const isWishlisted = (pgId) => {
-        return wishlist.some(item => item.pgId === pgId);
+        return Array.isArray(wishlist) && wishlist.some(item => item.pgId === pgId);
     };
 
     const toggleWishlist = async (pgId) => {
         if (!user) {
-            // Cute SweetAlert for login prompt
             const result = await Swal.fire({
                 title: '💖 Oops!',
                 text: 'You need to login first to save your favorite PGs!',
@@ -105,7 +135,7 @@ const Home = () => {
                     cancelButton: 'btn-outline-secondary'
                 }
             });
-            
+
             if (result.isConfirmed) {
                 window.location.href = '/login';
             }
@@ -113,13 +143,12 @@ const Home = () => {
         }
 
         try {
-            const existing = wishlist.find(item => item.pgId === pgId);
+            const existing = Array.isArray(wishlist) ? wishlist.find(item => item.pgId === pgId) : null;
             const pg = pgs.find(p => p.pgId === pgId);
-            
+
             if (existing) {
-                // Remove from wishlist with cute animation
                 await removeFromWishlist(existing.wishlistId);
-                
+
                 Swal.fire({
                     title: '💔 Removed!',
                     text: `${pg?.pgName || 'PG'} removed from your wishlist`,
@@ -133,12 +162,11 @@ const Home = () => {
                     }
                 });
             } else {
-                // Add to wishlist with cute celebration
                 await addToWishlist({
                     userId: user.userId,
                     pgId: pgId
                 });
-                
+
                 Swal.fire({
                     title: '❤️ Added to Wishlist!',
                     text: `${pg?.pgName || 'PG'} has been saved to your favorites ✨`,
@@ -152,7 +180,7 @@ const Home = () => {
                     }
                 });
             }
-            
+
             await loadWishlist();
         } catch (err) {
             console.log(err);
@@ -167,6 +195,39 @@ const Home = () => {
                     confirmButton: 'btn-gradient-primary'
                 }
             });
+        }
+    };
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsLoginDropdownOpen(false);
+            }
+        };
+
+        const handleKeyDown = (event) => {
+            if (event.key === "Escape") {
+                setIsLoginDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        document.addEventListener("keydown", handleKeyDown);
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener("keydown", handleKeyDown);
+        };
+    }, []);
+
+    const loadPgs = async () => {
+        try {
+            const data = await getAllPgs();
+            setPgs(data);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -393,8 +454,60 @@ const Home = () => {
           margin-bottom: 36px !important;
         }
 
-       
-        
+        /* SEARCH BOX */
+        .smartstay-page-wrapper .hero-search-box {
+          background: white !important;
+          border-radius: 50px !important;
+          padding: 8px 8px 8px 24px !important;
+          box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(99, 102, 241, 0.06) !important;
+          border: 1px solid #e2e8f0 !important;
+          display: flex !important;
+          align-items: center !important;
+          gap: 12px !important;
+          max-width: 540px !important;
+          transition: all 0.3s ease !important;
+        }
+
+        .smartstay-page-wrapper .hero-search-box:focus-within {
+          border-color: #6366f1 !important;
+          box-shadow: 0 18px 40px -10px rgba(99, 102, 241, 0.2) !important;
+        }
+
+        .smartstay-page-wrapper .hero-search-input {
+          border: none !important;
+          outline: none !important;
+          width: 100% !important;
+          font-size: 0.98rem !important;
+          color: #1e293b !important;
+          font-weight: 500 !important;
+          background: transparent !important;
+          box-shadow: none !important;
+        }
+
+        .smartstay-page-wrapper .hero-search-input::placeholder {
+          color: #94a3b8 !important;
+        }
+
+        .smartstay-page-wrapper .hero-search-btn {
+          background: linear-gradient(135deg, #6366f1 0%, #7c3aed 100%) !important;
+          color: white !important;
+          border: none !important;
+          border-radius: 30px !important;
+          padding: 12px 28px !important;
+          font-weight: 700 !important;
+          font-size: 0.95rem !important;
+          display: flex !important;
+          align-items: center !important;
+          gap: 8px !important;
+          transition: all 0.2s ease !important;
+          cursor: pointer !important;
+          box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
+        }
+
+        .smartstay-page-wrapper .hero-search-btn:hover {
+          background: linear-gradient(135deg, #4f46e5 0%, #6d28d9 100%) !important;
+          transform: translateY(-1px) !important;
+        }
 
         /* HERO STATS */
         .smartstay-page-wrapper .hero-stats {
@@ -655,12 +768,6 @@ const Home = () => {
           background: white !important;
           color: #ef4444 !important;
           transform: scale(1.1) !important;
-        }
-
-        .smartstay-page-wrapper .fav-btn.active {
-          background: rgba(239, 68, 68, 0.9) !important;
-          color: white !important;
-          box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3) !important;
         }
 
         .smartstay-page-wrapper .card-img-overlay-bottom {
@@ -1330,14 +1437,17 @@ const Home = () => {
             {/* Sticky Glassmorphism Navbar */}
             <nav className="smartstay-navbar navbar navbar-expand-lg px-4 py-3">
                 <div className="container">
-                    <a className="brand-logo" href="#">
-                        <div className="brand-icon">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                                <polyline points="9 22 9 12 15 12 15 22" />
-                            </svg>
-                        </div>
-                        SmartStay
+                    <a className="brand-logo d-flex align-items-center gap-2" href="#">
+                        <img 
+                            src="/logo.jpg.png" 
+                            alt="SmartStay Logo" 
+                            onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = "/logo.jpg";
+                            }}
+                            style={{ height: "60px", width: "auto", borderRadius: "8px", objectFit: "contain" }}
+                        />
+                        <span style={{ fontWeight: 800, fontSize: "1.35rem", color: "#0f172a" }}></span>
                     </a>
 
                     <div className="d-none d-md:flex align-items-center gap-4 ms-auto me-4">
@@ -1350,10 +1460,10 @@ const Home = () => {
 
                     <div className="d-flex align-items-center gap-2">
                         {/* Login As Multi-Role Dropdown */}
-                        <div className="position-relative me-2">
+                        <div className="position-relative me-2" ref={dropdownRef}>
                             <button 
                                 className="btn-login-dropdown" 
-                                onClick={() => setIsLoginDropdownOpen(!isLoginDropdownOpen)}
+                                onClick={() => setIsLoginDropdownOpen((prev) => !prev)}
                                 type="button"
                             >
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1384,7 +1494,7 @@ const Home = () => {
                                         <span className="dropdown-icon-badge user-bg">👤</span>
                                         <div>
                                             <div className="dropdown-title">User Login</div>
-                                            
+                                            <div className="dropdown-sub">For students & residents</div>
                                         </div>
                                     </Link>
 
@@ -1392,7 +1502,7 @@ const Home = () => {
                                         <span className="dropdown-icon-badge owner-bg">🏠</span>
                                         <div>
                                             <div className="dropdown-title">Owner Login</div>
-                                            
+                                            <div className="dropdown-sub">For PG owners & managers</div>
                                         </div>
                                     </Link>
 
@@ -1400,16 +1510,12 @@ const Home = () => {
                                         <span className="dropdown-icon-badge admin-bg">🛡️</span>
                                         <div>
                                             <div className="dropdown-title">Admin Login</div>
-                                            
+                                            <div className="dropdown-sub">For system administrators</div>
                                         </div>
                                     </Link>
                                 </div>
                             )}
                         </div>
-
-                        {/* <a href="#" className="btn-gradient-primary">
-                            List your PG
-                        </a> */}
                     </div>
                 </div>
             </nav>
@@ -1435,7 +1541,9 @@ const Home = () => {
                                 Discover verified PG accommodations for boys and girls with affordable rent, great amenities and trusted ratings.
                             </p>
 
+                            {/* Hero Search Box */}
                           
+
                             {/* Hero Stats */}
                             <div className="hero-stats">
                                 <div className="stat-item">
@@ -1453,7 +1561,7 @@ const Home = () => {
                             </div>
                         </div>
 
-                        {/* Right Hero Image Layout */}
+                        {/* Right Hero Image Layout (3 Images with Center Image = /hero.jpg.png) */}
                         <div className="col-lg-6">
                             <div className="hero-image-wrapper">
                                 {/* Floating Top Badge */}
@@ -1474,12 +1582,16 @@ const Home = () => {
                                     />
                                 </div>
 
-                                {/* Main Bedroom Image */}
+                                {/* Main Bedroom Center Image */}
                                 <div className="hero-main-card">
                                     <img
-                                        src="https://images.unsplash.com/photo-1540518614846-7ede433c5163?auto=format&fit=crop&w=800&q=80"
+                                        src="/hero.jpg.png"
                                         alt="Luxury PG Accommodation"
                                         className="hero-main-img"
+                                        onError={(e) => {
+                                            e.target.onerror = null;
+                                            e.target.src = "/hero.jpg";
+                                        }}
                                     />
                                 </div>
 
@@ -1707,6 +1819,8 @@ const Home = () => {
                 </div>
             </section>
 
+         
+
             {/* 3. SECTION: HOW SMARTSTAY WORKS */}
             <section id="how-it-works" className="container">
                 <div className="section-header text-center d-block">
@@ -1845,6 +1959,8 @@ const Home = () => {
                 </div>
             </section>
 
+         
+
             {/* 7. SECTION: FAQ ACCORDION */}
             <section id="faq" className="container">
                 <div className="section-header text-center d-block">
@@ -1921,6 +2037,7 @@ const Home = () => {
                             <h6 className="footer-heading">Quick Links</h6>
                             <ul className="footer-links">
                                 <li><a href="#why-choose">Why Us</a></li>
+                                <li><a href="#popular-cities">Cities</a></li>
                                 <li><a href="#how-it-works">How It Works</a></li>
                                 <li><a href="#amenities">Amenities</a></li>
                                 <li><a href="#faq">FAQs</a></li>
@@ -1930,9 +2047,9 @@ const Home = () => {
                         <div className="col-lg-3 col-md-6">
                             <h6 className="footer-heading">Contact Us</h6>
                             <ul className="footer-links">
-                                <li><a href="mailto:hello@smartstay.in">hello@smartstay.in</a></li>
-                                <li><a href="tel:+919876543210">+91 8576897117</a></li>
-                                <li><span style={{ color: "#64748b", fontSize: "0.9rem" }}>Noida, UP - 201309</span></li>
+                                <li><a href="mailto:admin@smartstay.in">admin@smartstay.in</a></li>
+                                <li><a href="tel:+918576897117">+91 85768 97117</a></li>
+                                <li><span style={{ color: "#64748b", fontSize: "0.9rem" }}>Sector 62 , Noida , UP  - 201309</span></li>
                             </ul>
                         </div>
 

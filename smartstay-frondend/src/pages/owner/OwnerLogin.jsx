@@ -59,7 +59,7 @@ const OwnerLogin = () => {
                     <span style={styles.brandText}>SmartStay</span>
                 </Link>
 
-                <Link to="/register" style={styles.topLoginLink}>
+                <Link to="/owner/register" style={styles.topLoginLink}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                         <circle cx="8.5" cy="7" r="4"/>
@@ -244,7 +244,7 @@ const OwnerLogin = () => {
                 {/* Footer Switch Link */}
                 <div style={styles.footerBox}>
                     Don't have an account?{" "}
-                    <Link to="/register" style={styles.loginLink}>
+                    <Link to="/owner/register" style={styles.loginLink}>
                         Register
                     </Link>
                 </div>
