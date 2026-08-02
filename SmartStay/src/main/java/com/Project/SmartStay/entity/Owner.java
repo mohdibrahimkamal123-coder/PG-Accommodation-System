@@ -23,12 +23,12 @@ public class Owner {
 
     @NotBlank(message = "Email is required")
     @Email(message = "Invalid Email")
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(name = "email", nullable = false)
     private String email;
 
     @NotBlank(message = "Mobile Number is required")
     @Pattern(regexp = "^[6-9]\\d{9}$", message = "Invalid Mobile Number")
-    @Column(name = "mobile_number", nullable = false, unique = true)
+    @Column(name = "mobile_number", nullable = false)
     private String mobileNumber;
 
     @NotBlank(message = "Password is required")
