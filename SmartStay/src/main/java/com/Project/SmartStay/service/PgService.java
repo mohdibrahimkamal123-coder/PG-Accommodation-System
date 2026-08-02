@@ -128,7 +128,9 @@ return pgRepository.save(pg);
 
     }
     public List<Pg> getAllPgs() {
-        return pgRepository.findAll();
+
+        return pgRepository.findByApprovedTrue();
+
     }
     public List<Pg> getAllPgs1() {
 

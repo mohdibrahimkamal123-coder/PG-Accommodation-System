@@ -9,7 +9,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     List<Review> findByPgId(Long pgId);
 
     List<Review> findByUserId(Long userId);
-    
+    List<Review> findTop6ByOrderByCreatedAtDesc();
     @Query("SELECT AVG(r.rating) FROM Review r WHERE r.pgId = :pgId")
     Double getAverageRatingByPgId(Long pgId);
 }

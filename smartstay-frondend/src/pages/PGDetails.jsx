@@ -178,7 +178,7 @@ const PGDetails = () => {
             <div className="d-flex justify-content-between align-items-start">
               <h2 className="mb-0">{pg.pgName}</h2>
               <span className="badge bg-success fs-6 p-2">
-                ⭐ {pg.rating.toFixed(1)}
+                ⭐ {pg.rating ? pg.rating.toFixed(1) : "N/A"}
               </span>
             </div>
             <hr />
@@ -314,7 +314,7 @@ const PGDetails = () => {
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .hover-shadow:hover {
           box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
           transition: box-shadow 0.2s ease;
