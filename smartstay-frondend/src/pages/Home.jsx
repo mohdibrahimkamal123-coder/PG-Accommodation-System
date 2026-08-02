@@ -1407,9 +1407,9 @@ const Home = () => {
                             )}
                         </div>
 
-                        <a href="#" className="btn-gradient-primary">
+                        {/* <a href="#" className="btn-gradient-primary">
                             List your PG
-                        </a>
+                        </a> */}
                     </div>
                 </div>
             </nav>
