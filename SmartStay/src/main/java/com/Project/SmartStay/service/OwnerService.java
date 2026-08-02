@@ -93,33 +93,44 @@ public class OwnerService {
     // ==========================
     public String updateProfile(Long ownerId, OwnerUpdateRequest request) {
 
-        Owner owner = ownerRepository.findById(ownerId)
-                .orElseThrow(() ->
-                        new RuntimeException("Owner Not Found"));
+        try {
+            System.out.println("===== UPDATE PROFILE =====");
 
-        // Check duplicate email
-        if (!owner.getEmail().equals(request.getEmail())
-                && ownerRepository.existsByEmail(request.getEmail())) {
+            Owner owner = ownerRepository.findById(ownerId)
+                    .orElseThrow(() -> new RuntimeException("Owner Not Found"));
+            System.out.println("1. Owner Found");
 
-            throw new RuntimeException("Email already exists.");
+            if (!owner.getEmail().equals(request.getEmail())
+                    && ownerRepository.existsByEmail(request.getEmail())) {
+                System.out.println("2. Duplicate Email");
+                throw new RuntimeException("Email already exists.");
+            }
+            System.out.println("2. Email OK");
+
+            if (!owner.getMobileNumber().equals(request.getMobileNumber())
+                    && ownerRepository.existsByMobileNumber(request.getMobileNumber())) {
+                System.out.println("3. Duplicate Mobile");
+                throw new RuntimeException("Mobile already exists.");
+            }
+            System.out.println("3. Mobile OK");
+
+            owner.setFullName(request.getFullName());
+            owner.setEmail(request.getEmail());
+            owner.setMobileNumber(request.getMobileNumber());
+
+            System.out.println("4. Before Save");
+
+            ownerRepository.saveAndFlush(owner);
+
+            System.out.println("5. After Save");
+
+            return "Profile Updated Successfully";
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
         }
-
-        // Check duplicate mobile
-        if (!owner.getMobileNumber().equals(request.getMobileNumber())
-                && ownerRepository.existsByMobileNumber(request.getMobileNumber())) {
-
-            throw new RuntimeException("Mobile number already exists.");
-        }
-
-        owner.setFullName(request.getFullName());
-        owner.setEmail(request.getEmail());
-        owner.setMobileNumber(request.getMobileNumber());
-
-        ownerRepository.save(owner);
-
-        return "Profile Updated Successfully";
     }
-
     // ==========================
     // Change Password
     // ==========================
