@@ -13,11 +13,13 @@ import com.Project.SmartStay.dto.BookingResponse;
 import com.Project.SmartStay.entity.Booking;
 import com.Project.SmartStay.entity.Pg;
 import com.Project.SmartStay.entity.Room;
+import com.Project.SmartStay.entity.User;
 import com.Project.SmartStay.exception.NoBedsAvailableException;
 import com.Project.SmartStay.exception.ResourceNotFoundException;
 import com.Project.SmartStay.repository.BookingRepository;
 import com.Project.SmartStay.repository.PgRepository;
 import com.Project.SmartStay.repository.RoomRepository;
+import com.Project.SmartStay.repository.UserRepository;
 
 @Service
 public class BookingService {
@@ -31,6 +33,9 @@ public class BookingService {
     @Autowired
     private PgRepository pgRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+    
     // ==========================
     // Book Room
     // ==========================
@@ -219,6 +224,10 @@ public class BookingService {
     // =====================================================
     private BookingResponse convertToResponse(Booking booking) {
 
+        User user = userRepository
+                .findById(booking.getUserId())
+                .orElse(null);
+
         Room room = roomRepository
                 .findById(booking.getRoomId())
                 .orElseThrow(() ->
@@ -230,10 +239,15 @@ public class BookingService {
                         new ResourceNotFoundException("PG Not Found"));
 
         return new BookingResponse(
+
                 booking.getBookingId(),
                 booking.getBookingNumber(),
                 booking.getBookingDate(),
                 booking.getStatus(),
+
+                booking.getUserId(),
+                user != null ? user.getFullName() : "Unknown User",
+
                 booking.getMoveInDate(),
                 booking.getExpectedStayMonths(),
                 booking.getEmergencyContact(),

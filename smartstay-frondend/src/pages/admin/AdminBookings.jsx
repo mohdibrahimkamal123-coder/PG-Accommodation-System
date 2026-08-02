@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
-import { getAllBookings, deleteBooking } from '../../services/adminService';
+import { getAllBookings, deleteBooking} from '../../services/adminService';
 
 const AdminBookings = () => {
     const [bookings, setBookings] = useState([]);
@@ -80,7 +80,7 @@ const AdminBookings = () => {
         const searchMatch = 
             booking.userName?.toLowerCase().includes(search.toLowerCase()) ||
             booking.pgName?.toLowerCase().includes(search.toLowerCase()) ||
-            booking.id?.toString().includes(search);
+            booking.bookingId?.toString().includes(search);
         
         if (filter === 'ALL') return searchMatch;
         return searchMatch && booking.status?.toLowerCase() === filter.toLowerCase();
@@ -224,8 +224,8 @@ const AdminBookings = () => {
                                 {filteredBookings.map((booking) => {
                                     const statusInfo = getStatusBadge(booking.status);
                                     return (
-                                        <tr key={booking.id} style={{ transition: 'all 0.2s ease' }} onMouseEnter={(e) => e.currentTarget.style.background = '#f8fafc'} onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
-                                            <td style={{ padding: '16px 12px', borderBottom: '1px solid #f8fafc', verticalAlign: 'middle', fontWeight: 700, color: '#0f172a', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>#{booking.id}</td>
+                                        <tr key={booking.bookingId} style={{ transition: 'all 0.2s ease' }} onMouseEnter={(e) => e.currentTarget.style.background = '#f8fafc'} onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
+                                            <td style={{ padding: '16px 12px', borderBottom: '1px solid #f8fafc', verticalAlign: 'middle', fontWeight: 700, color: '#0f172a', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>#{booking.bookingId}</td>
                                             <td style={{ padding: '16px 12px', borderBottom: '1px solid #f8fafc', verticalAlign: 'middle', fontWeight: 600, color: '#0f172a', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{booking.userName || 'N/A'}</td>
                                             <td style={{ padding: '16px 12px', borderBottom: '1px solid #f8fafc', verticalAlign: 'middle', color: '#475569', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{booking.pgName || 'N/A'}</td>
                                             <td style={{ padding: '16px 12px', borderBottom: '1px solid #f8fafc', verticalAlign: 'middle', color: '#475569', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{booking.checkIn || 'N/A'}</td>
@@ -248,7 +248,7 @@ const AdminBookings = () => {
                                             </td>
                                             <td style={{ padding: '16px 12px', borderBottom: '1px solid #f8fafc', verticalAlign: 'middle' }}>
                                                 <button 
-                                                    onClick={() => handleDelete(booking.id)} 
+                                                    onClick={() => handleDelete(booking.bookingId)} 
                                                     style={{ 
                                                         display: 'inline-flex', 
                                                         alignItems: 'center', 
