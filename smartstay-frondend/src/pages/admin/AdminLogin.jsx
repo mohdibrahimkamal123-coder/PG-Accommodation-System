@@ -1,27 +1,36 @@
+// src/pages/admin/AdminLogin.jsx
+
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { adminLogin } from "../../services/adminService";
+
 const AdminLogin = () => {
     const navigate = useNavigate();
+
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError("");
+
         try {
             const response = await adminLogin({
                 email,
                 password,
             });
+
             console.log("Login Response:", response);
+
             if (response.adminId) {
                 localStorage.setItem(
                     "admin",
                     JSON.stringify(response)
                 );
+
                 navigate("/admin/dashboard");
             } else {
                 setError("Invalid credentials");
@@ -33,271 +42,22 @@ const AdminLogin = () => {
             setLoading(false);
         }
     };
-    const adminLoginStyles = `
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-    .smartstay-admin-login-page {
-      min-height: 100vh !important;
-      width: 100% !important;
-      background: radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.12) 0%, transparent 40%),
-                  radial-gradient(circle at 85% 85%, rgba(139, 92, 246, 0.12) 0%, transparent 40%),
-                  radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.06) 0%, transparent 60%),
-                  #f8fafc !important;
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
-      display: flex !important;
-      flex-direction: column !important;
-      align-items: center !important;
-      justify-content: center !important;
-      padding: 40px 20px !important;
-      position: relative !important;
-      overflow: hidden !important;
-    }
-    .smartstay-admin-login-page .login-top-bar {
-      position: absolute !important;
-      top: 24px !important;
-      left: 32px !important;
-      right: 32px !important;
-      display: flex !important;
-      justify-content: space-between !important;
-      align-items: center !important;
-      z-index: 10 !important;
-    }
-    .smartstay-admin-login-page .brand-logo-login {
-      display: flex !important;
-      align-items: center !important;
-      gap: 10px !important;
-      text-decoration: none !important;
-      font-weight: 800 !important;
-      font-size: 1.3rem !important;
-      color: #0f172a !important;
-    }
-    .smartstay-admin-login-page .brand-icon-box {
-      width: 38px !important;
-      height: 38px !important;
-      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
-      border-radius: 12px !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      color: white !important;
-      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35) !important;
-    }
-    .smartstay-admin-login-page .back-home-link {
-      display: inline-flex !important;
-      align-items: center !important;
-      gap: 8px !important;
-      color: #64748b !important;
-      text-decoration: none !important;
-      font-weight: 600 !important;
-      font-size: 0.9rem !important;
-      padding: 8px 16px !important;
-      border-radius: 20px !important;
-      background: rgba(255, 255, 255, 0.8) !important;
-      backdrop-filter: blur(10px) !important;
-      border: 1px solid rgba(226, 232, 240, 0.8) !important;
-      transition: all 0.2s ease !important;
-    }
-    .smartstay-admin-login-page .back-home-link:hover {
-      color: #6366f1 !important;
-      background: #ffffff !important;
-      transform: translateX(-3px) !important;
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1) !important;
-    }
-    .smartstay-admin-login-page .login-glass-card {
-      background: rgba(255, 255, 255, 0.92) !important;
-      backdrop-filter: blur(20px) !important;
-      -webkit-backdrop-filter: blur(20px) !important;
-      border: 1px solid rgba(255, 255, 255, 0.8) !important;
-      border-radius: 32px !important;
-      padding: 48px 40px !important;
-      width: 100% !important;
-      max-width: 450px !important;
-      box-shadow: 0 30px 70px -15px rgba(99, 102, 241, 0.15), 0 15px 30px -10px rgba(15, 23, 42, 0.05) !important;
-      position: relative !important;
-      z-index: 5 !important;
-      margin-top: 40px !important;
-    }
-    .smartstay-admin-login-page .tag-badge {
-      display: inline-flex !important;
-      align-items: center !important;
-      gap: 6px !important;
-      background: #eef2ff !important;
-      border: 1px solid rgba(99, 102, 241, 0.2) !important;
-      color: #4f46e5 !important;
-      font-size: 0.75rem !important;
-      font-weight: 800 !important;
-      padding: 4px 14px !important;
-      border-radius: 20px !important;
-      letter-spacing: 0.04em !important;
-      text-transform: uppercase !important;
-      margin-bottom: 16px !important;
-    }
-    .smartstay-admin-login-page .login-title {
-      font-size: 2.1rem !important;
-      font-weight: 800 !important;
-      color: #0f172a !important;
-      letter-spacing: -0.02em !important;
-      margin-bottom: 8px !important;
-    }
-    .smartstay-admin-login-page .login-subtitle {
-      color: #64748b !important;
-      font-size: 0.95rem !important;
-      margin-bottom: 24px !important;
-      line-height: 1.5 !important;
-    }
-    .smartstay-admin-login-page .error-alert-banner {
-      background: #fef2f2 !important;
-      border: 1px solid #fca5a5 !important;
-      color: #dc2626 !important;
-      padding: 12px 16px !important;
-      border-radius: 16px !important;
-      font-size: 0.88rem !important;
-      font-weight: 700 !important;
-      margin-bottom: 20px !important;
-      display: flex !important;
-      align-items: center !important;
-      gap: 10px !important;
-      animation: fadeIn 0.2s ease !important;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-4px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .smartstay-admin-login-page .form-group-custom {
-      display: flex !important;
-      flex-direction: column !important;
-      gap: 8px !important;
-      margin-bottom: 22px !important;
-    }
-    .smartstay-admin-login-page .input-label-row {
-      display: flex !important;
-      justify-content: space-between !important;
-      align-items: center !important;
-    }
-    .smartstay-admin-login-page .form-label-custom {
-      font-size: 0.78rem !important;
-      font-weight: 800 !important;
-      text-transform: uppercase !important;
-      letter-spacing: 0.05em !important;
-      color: #475569 !important;
-      margin: 0 !important;
-    }
-    .smartstay-admin-login-page .input-wrapper-rel {
-      position: relative !important;
-      display: flex !important;
-      align-items: center !important;
-    }
-    .smartstay-admin-login-page .input-icon-left {
-      position: absolute !important;
-      left: 16px !important;
-      color: #94a3b8 !important;
-      pointer-events: none !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-    }
-    .smartstay-admin-login-page .form-input-custom {
-      width: 100% !important;
-      padding: 14px 16px 14px 46px !important;
-      border-radius: 16px !important;
-      border: 1.5px solid #e2e8f0 !important;
-      outline: none !important;
-      background: #f8fafc !important;
-      font-size: 0.95rem !important;
-      color: #0f172a !important;
-      font-weight: 600 !important;
-      transition: all 0.25s ease !important;
-    }
-    .smartstay-admin-login-page .form-input-custom::placeholder {
-      color: #94a3b8 !important;
-      font-weight: 500 !important;
-    }
-    .smartstay-admin-login-page .form-input-custom:focus {
-      background: #ffffff !important;
-      border-color: #6366f1 !important;
-      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15) !important;
-    }
-    .smartstay-admin-login-page .btn-login-submit {
-      width: 100% !important;
-      background: linear-gradient(135deg, #6366f1 0%, #7c3aed 100%) !important;
-      color: white !important;
-      border: none !important;
-      border-radius: 16px !important;
-      padding: 14px !important;
-      font-size: 1rem !important;
-      font-weight: 700 !important;
-      cursor: pointer !important;
-      box-shadow: 0 8px 22px rgba(99, 102, 241, 0.35) !important;
-      transition: all 0.3s ease !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      gap: 10px !important;
-      margin-top: 10px !important;
-    }
-    .smartstay-admin-login-page .btn-login-submit:hover:not(:disabled) {
-      background: linear-gradient(135deg, #4f46e5 0%, #6d28d9 100%) !important;
-      transform: translateY(-2px) !important;
-      box-shadow: 0 12px 28px rgba(99, 102, 241, 0.45) !important;
-    }
-    .smartstay-admin-login-page .btn-login-submit:disabled {
-      opacity: 0.75 !important;
-      cursor: not-allowed !important;
-    }
-    .smartstay-admin-login-page .spinner-icon {
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-    .smartstay-admin-login-page .login-card-footer {
-      text-align: center !important;
-      margin-top: 30px !important;
-      border-top: 1px solid #f1f5f9 !important;
-      padding-top: 22px !important;
-    }
-    .smartstay-admin-login-page .signup-prompt {
-      font-size: 0.92rem !important;
-      color: #64748b !important;
-      margin: 0 !important;
-    }
-    .smartstay-admin-login-page .signup-link-custom {
-      color: #6366f1 !important;
-      text-decoration: none !important;
-      font-weight: 800 !important;
-      transition: color 0.2s ease !important;
-      margin-left: 4px !important;
-    }
-    .smartstay-admin-login-page .signup-link-custom:hover {
-      color: #4f46e5 !important;
-      text-decoration: underline !important;
-    }
-    .smartstay-admin-login-page .security-badge-footer {
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      gap: 6px !important;
-      color: #94a3b8 !important;
-      font-size: 0.78rem !important;
-      font-weight: 600 !important;
-      margin-top: 24px !important;
-    }
-  `;
+
     return (
-        <div className="smartstay-admin-login-page">
-            <style dangerouslySetInnerHTML={{ __html: adminLoginStyles }} />
-            {/* Top Navigation Bar */}
-            <div className="login-top-bar">
-                <Link to="/" className="brand-logo-login">
-                    <div className="brand-icon-box">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <div style={styles.wrapper}>
+            {/* Top Brand Navigation Bar */}
+            <div style={styles.topBar}>
+                <Link to="/" style={styles.brandLogo}>
+                    <div style={styles.brandIconBox}>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                             <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
                             <polyline points="9 22 9 12 15 12 15 22" />
                         </svg>
                     </div>
-                    SmartStay
+                    <span style={styles.brandText}>SmartStay</span>
                 </Link>
-                <Link to="/login" className="back-home-link">
+
+                <Link to="/login" style={styles.topLoginLink}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                         <circle cx="12" cy="7" r="4"/>
@@ -305,36 +65,76 @@ const AdminLogin = () => {
                     User Login
                 </Link>
             </div>
-            {/* Main Login Card */}
-            <div className="login-glass-card">
-                <div style={{ textAlign: "center" }}>
-                    <span className="tag-badge">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                        </svg>
-                        Admin Control Panel
-                    </span>
-                    <h1 className="login-title">Admin Login</h1>
-                    <p className="login-subtitle">Access system management and controls.</p>
+
+            {/* Main Admin Glass Card */}
+            <div style={styles.card}>
+                {/* Top Right Decorative SVG Accent */}
+                <div style={styles.cardDecorTopRight}>
+                    <svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="100" cy="50" r="60" fill="url(#adminGrad1)" fillOpacity="0.16" />
+                        <circle cx="120" cy="35" r="35" fill="url(#adminGrad2)" fillOpacity="0.22" />
+                        <path d="M30 20 Q100 50 140 140" stroke="url(#adminGrad1)" strokeWidth="2" strokeDasharray="5 5" strokeOpacity="0.35" />
+                        <defs>
+                            <linearGradient id="adminGrad1" x1="40" y1="0" x2="160" y2="120" gradientUnits="userSpaceOnUse">
+                                <stop stopColor="#6366f1" />
+                                <stop offset="1" stopColor="#8b5cf6" />
+                            </linearGradient>
+                            <linearGradient id="adminGrad2" x1="80" y1="0" x2="160" y2="70" gradientUnits="userSpaceOnUse">
+                                <stop stopColor="#06b6d4" />
+                                <stop offset="1" stopColor="#6366f1" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
                 </div>
+
+                {/* Bottom Left Dots SVG Accent */}
+                <div style={styles.cardDecorBottomLeft}>
+                    <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
+                        <g fill="#6366f1" fillOpacity="0.14">
+                            <circle cx="15" cy="70" r="3" />
+                            <circle cx="35" cy="70" r="3" />
+                            <circle cx="55" cy="70" r="3" />
+                            <circle cx="15" cy="90" r="3" />
+                            <circle cx="35" cy="90" r="3" />
+                            <circle cx="55" cy="90" r="3" />
+                        </g>
+                    </svg>
+                </div>
+
+                {/* Header */}
+                <div style={styles.header}>
+                    <div style={styles.badgeWrapper}>
+                        <span style={styles.tagBadge}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            </svg>
+                            Admin Control Panel
+                        </span>
+                    </div>
+                    <h1 style={styles.headline}>Admin Login</h1>
+                    <p style={styles.subheadline}>System administration and platform settings.</p>
+                </div>
+
                 {/* Error Banner */}
                 {error && (
-                    <div className="error-alert-banner">
+                    <div style={styles.errorAlert}>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                             <circle cx="12" cy="12" r="10"/>
                             <line x1="12" y1="8" x2="12" y2="12"/>
                             <line x1="12" y1="16" x2="12.01" y2="16"/>
                         </svg>
-                        <span>{typeof error === "string" ? error : (error?.message || "Invalid credentials")}</span>
+                        <span>{error}</span>
                     </div>
                 )}
+
                 {/* Form */}
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} style={styles.form}>
                     {/* Email Field */}
-                    <div className="form-group-custom">
-                        <label className="form-label-custom">Email</label>
-                        <div className="input-wrapper-rel">
-                            <span className="input-icon-left">
+                    <div style={styles.formGroup}>
+                        <label style={styles.label}>Admin Email</label>
+                        <div style={styles.inputWrapper}>
+                            <span style={styles.inputIcon}>
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
                                     <polyline points="22,6 12,13 2,6"/>
@@ -342,21 +142,20 @@ const AdminLogin = () => {
                             </span>
                             <input
                                 type="email"
-                                placeholder="Email"
+                                placeholder="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="form-input-custom"
+                                style={styles.input}
                                 required
                             />
                         </div>
                     </div>
+
                     {/* Password Field */}
-                    <div className="form-group-custom">
-                        <div className="input-label-row">
-                            <label className="form-label-custom">Password</label>
-                        </div>
-                        <div className="input-wrapper-rel">
-                            <span className="input-icon-left">
+                    <div style={styles.formGroup}>
+                        <label style={styles.label}>Password</label>
+                        <div style={styles.inputWrapper}>
+                            <span style={styles.inputIcon}>
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                                     <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
@@ -364,31 +163,26 @@ const AdminLogin = () => {
                             </span>
                             <input
                                 type="password"
-                                placeholder="Password"
+                                placeholder="••••••••"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="form-input-custom"
+                                style={styles.input}
                                 required
                             />
                         </div>
                     </div>
+
                     {/* Submit Button */}
                     <button
                         type="submit"
-                        className="btn-login-submit"
+                        style={styles.submitBtn}
                         disabled={loading}
                     >
                         {loading ? (
-                            <>
-                                <svg className="spinner-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                    <circle cx="12" cy="12" r="10" strokeOpacity="0.25"/>
-                                    <path d="M12 2a10 10 0 0 1 10 10" strokeOpacity="1"/>
-                                </svg>
-                                Logging in...
-                            </>
+                            <span>Logging in...</span>
                         ) : (
                             <>
-                                <span>Login</span>
+                                <span>Sign In as Admin</span>
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                     <line x1="5" y1="12" x2="19" y2="12"/>
                                     <polyline points="12 5 19 12 12 19"/>
@@ -397,25 +191,272 @@ const AdminLogin = () => {
                         )}
                     </button>
                 </form>
+
                 {/* Footer Switch Link */}
-                <div className="login-card-footer">
-                    <p className="signup-prompt">
-                        Looking for guest bookings?{" "}
-                        <Link to="/login" className="signup-link-custom">
-                            User Login
-                        </Link>
-                    </p>
+                <div style={styles.footerBox}>
+                    Not an admin?{" "}
+                    <Link to="/login" style={styles.loginLink}>
+                        User Login
+                    </Link>
                 </div>
             </div>
+
             {/* Footer Security Badge */}
-            <div className="security-badge-footer">
+            <div style={styles.securityBadge}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                     <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                 </svg>
-                <span>256-Bit Encrypted SmartStay Admin Portal</span>
+                <span>256-Bit Encrypted SmartStay Admin Security</span>
             </div>
         </div>
     );
 };
+
+const styles = {
+    wrapper: {
+        minHeight: "100vh",
+        width: "100%",
+        backgroundColor: "#f8fafc",
+        backgroundImage: `
+      radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.15) 0%, transparent 60%),
+      radial-gradient(circle at 100% 100%, rgba(139, 92, 246, 0.12) 0%, transparent 50%),
+      url("data:image/svg+xml,%3Csvg width='180' height='120' viewBox='0 0 180 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%236366f1' fill-opacity='0.09'%3E%3Crect x='10' y='10' width='45' height='26' rx='13'/%3E%3Crect x='65' y='10' width='105' height='26' rx='13'/%3E%3Crect x='10' y='47' width='105' height='26' rx='13'/%3E%3Crect x='125' y='47' width='45' height='26' rx='13'/%3E%3Crect x='10' y='84' width='45' height='26' rx='13'/%3E%3Crect x='65' y='84' width='105' height='26' rx='13'/%3E%3C/g%3E%3C/svg%3E")
+    `,
+        backgroundRepeat: "repeat",
+        fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "30px 20px 40px 20px",
+        boxSizing: "border-box",
+        position: "relative",
+    },
+    topBar: {
+        position: "absolute",
+        top: "24px",
+        left: "32px",
+        right: "32px",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        zIndex: 10,
+    },
+    brandLogo: {
+        display: "flex",
+        alignItems: "center",
+        gap: "10px",
+        textDecoration: "none",
+        fontWeight: "800",
+        fontSize: "1.3rem",
+        color: "#0f172a",
+    },
+    brandIconBox: {
+        width: "38px",
+        height: "38px",
+        background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
+        borderRadius: "12px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "#ffffff",
+        boxShadow: "0 4px 14px rgba(99, 102, 241, 0.35)",
+    },
+    brandText: {
+        fontSize: "1.3rem",
+        fontWeight: "800",
+        color: "#0f172a",
+    },
+    topLoginLink: {
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "8px",
+        color: "#64748b",
+        textDecoration: "none",
+        fontWeight: "600",
+        fontSize: "0.9rem",
+        padding: "8px 16px",
+        borderRadius: "20px",
+        background: "rgba(255, 255, 255, 0.8)",
+        backdropFilter: "blur(10px)",
+        border: "1px solid rgba(226, 232, 240, 0.8)",
+    },
+    card: {
+        background: "rgba(255, 255, 255, 0.95)",
+        backdropFilter: "blur(24px)",
+        WebkitBackdropFilter: "blur(24px)",
+        border: "1.5px solid rgba(255, 255, 255, 0.9)",
+        borderRadius: "36px",
+        padding: "44px 40px",
+        width: "100%",
+        maxWidth: "460px",
+        boxShadow: "0 30px 60px -15px rgba(99, 102, 241, 0.18), 0 12px 24px -10px rgba(15, 23, 42, 0.06)",
+        position: "relative",
+        overflow: "hidden",
+        zIndex: 5,
+        marginTop: "50px",
+        boxSizing: "border-box",
+    },
+    cardDecorTopRight: {
+        position: "absolute",
+        top: "-20px",
+        right: "-20px",
+        pointerEvents: "none",
+        zIndex: 1,
+    },
+    cardDecorBottomLeft: {
+        position: "absolute",
+        bottom: "-10px",
+        left: "-10px",
+        pointerEvents: "none",
+        zIndex: 1,
+    },
+    header: {
+        textAlign: "center",
+        marginBottom: "28px",
+        position: "relative",
+        zIndex: 2,
+    },
+    badgeWrapper: {
+        display: "flex",
+        justifyContent: "center",
+    },
+    tagBadge: {
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "8px",
+        background: "linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%)",
+        border: "1px solid rgba(99, 102, 241, 0.25)",
+        color: "#4f46e5",
+        fontSize: "12px",
+        fontWeight: "800",
+        padding: "6px 18px",
+        borderRadius: "30px",
+        letterSpacing: "0.04em",
+        textTransform: "uppercase",
+        marginBottom: "16px",
+    },
+    headline: {
+        fontSize: "28px",
+        fontWeight: "800",
+        color: "#0f172a",
+        letterSpacing: "-0.03em",
+        lineHeight: "1.25",
+        marginBottom: "10px",
+        marginTop: "0",
+    },
+    subheadline: {
+        color: "#64748b",
+        fontSize: "14px",
+        marginBottom: "20px",
+        marginTop: "0",
+        lineHeight: "1.5",
+    },
+    errorAlert: {
+        background: "#fef2f2",
+        border: "1px solid #fca5a5",
+        color: "#dc2626",
+        padding: "12px 16px",
+        borderRadius: "16px",
+        fontSize: "14px",
+        fontWeight: "700",
+        marginBottom: "20px",
+        display: "flex",
+        alignItems: "center",
+        gap: "10px",
+    },
+    form: {
+        display: "flex",
+        flexDirection: "column",
+        gap: "18px",
+        position: "relative",
+        zIndex: 2,
+    },
+    formGroup: {
+        display: "flex",
+        flexDirection: "column",
+        gap: "6px",
+    },
+    label: {
+        fontSize: "12px",
+        fontWeight: "800",
+        textTransform: "uppercase",
+        letterSpacing: "0.05em",
+        color: "#475569",
+        margin: 0,
+    },
+    inputWrapper: {
+        position: "relative",
+        display: "flex",
+        alignItems: "center",
+    },
+    inputIcon: {
+        position: "absolute",
+        left: "16px",
+        color: "#94a3b8",
+        pointerEvents: "none",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    input: {
+        width: "100%",
+        padding: "13px 16px 13px 46px",
+        borderRadius: "20px",
+        border: "1.5px solid #e2e8f0",
+        outline: "none",
+        background: "#f8fafc",
+        fontSize: "15px",
+        color: "#0f172a",
+        fontWeight: "600",
+        boxSizing: "border-box",
+        transition: "all 0.25s ease",
+    },
+    submitBtn: {
+        width: "100%",
+        background: "#0f172a",
+        color: "#ffffff",
+        border: "none",
+        borderRadius: "30px",
+        padding: "15px",
+        fontSize: "16px",
+        fontWeight: "700",
+        cursor: "pointer",
+        boxShadow: "0 10px 25px rgba(15, 23, 42, 0.25)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: "10px",
+        marginTop: "12px",
+        transition: "all 0.3s ease",
+    },
+    footerBox: {
+        textAlign: "center",
+        marginTop: "24px",
+        borderTop: "1px solid #f1f5f9",
+        paddingTop: "20px",
+        fontSize: "14px",
+        color: "#64748b",
+        position: "relative",
+        zIndex: 2,
+    },
+    loginLink: {
+        color: "#6366f1",
+        textDecoration: "none",
+        fontWeight: "800",
+        marginLeft: "4px",
+    },
+    securityBadge: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: "6px",
+        color: "#94a3b8",
+        fontSize: "12px",
+        fontWeight: "600",
+        marginTop: "20px",
+    },
+};
+
 export default AdminLogin;

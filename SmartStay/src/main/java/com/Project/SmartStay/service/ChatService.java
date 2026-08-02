@@ -8,6 +8,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 @Service
@@ -19,9 +20,15 @@ public class ChatService {
     @Value("${gemini.model}")
     private String model;
 
+    private final RestTemplate restTemplate = new RestTemplate();
+
     public String chat(String userMessage) {
 
         try {
+
+            System.out.println("========== GEMINI DEBUG ==========");
+            System.out.println("Model : " + model);
+            System.out.println("API Key Prefix : " + apiKey.substring(0, Math.min(apiKey.length(), 8)));
 
             String url =
                     "https://generativelanguage.googleapis.com/v1beta/models/"
@@ -29,7 +36,7 @@ public class ChatService {
                             + ":generateContent?key="
                             + apiKey;
 
-            RestTemplate restTemplate = new RestTemplate();
+            System.out.println("URL : " + url);
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -39,20 +46,20 @@ public class ChatService {
 
                     You only answer questions related to:
 
-                    - PG Accommodation
-                    - Booking
-                    - Rooms
-                    - Rent
-                    - Amenities
-                    - SmartStay Project
+                    • PG Accommodation
+                    • Booking
+                    • Rooms
+                    • Rent
+                    • Amenities
+                    • SmartStay Project
 
-                    If the question is unrelated,
-                    politely reply:
+                    If the question is unrelated, politely reply:
 
                     "I can only help with SmartStay PG related queries."
 
                     User Question:
-                    """ + userMessage;
+                    """
+                    + userMessage;
 
             Map<String, Object> body = Map.of(
                     "contents",
@@ -69,37 +76,52 @@ public class ChatService {
                     )
             );
 
+            System.out.println("Request Body:");
+            System.out.println(body);
+
             HttpEntity<Map<String, Object>> request =
                     new HttpEntity<>(body, headers);
 
-            Map response =
+            Map<String, Object> response =
                     restTemplate.postForObject(url, request, Map.class);
 
-            List candidates =
-                    (List) response.get("candidates");
+            System.out.println("Gemini Response:");
+            System.out.println(response);
 
-            Map candidate =
-                    (Map) candidates.get(0);
+            if (response == null || !response.containsKey("candidates")) {
+                return "No response received from Gemini.";
+            }
 
-            Map content =
-                    (Map) candidate.get("content");
+            List<?> candidates = (List<?>) response.get("candidates");
 
-            List parts =
-                    (List) content.get("parts");
+            if (candidates.isEmpty()) {
+                return "Gemini returned no candidates.";
+            }
 
-            Map first =
-                    (Map) parts.get(0);
+            Map<?, ?> candidate = (Map<?, ?>) candidates.get(0);
+            Map<?, ?> content = (Map<?, ?>) candidate.get("content");
+            List<?> parts = (List<?>) content.get("parts");
+            Map<?, ?> first = (Map<?, ?>) parts.get(0);
 
             return first.get("text").toString();
 
+        } catch (HttpStatusCodeException ex) {
+
+            System.out.println("========== GEMINI ERROR ==========");
+            System.out.println("Status Code : " + ex.getStatusCode());
+            System.out.println("Response Body : ");
+            System.out.println(ex.getResponseBodyAsString());
+
+            ex.printStackTrace();
+
+            return "ERROR : " + ex.getResponseBodyAsString();
+
         } catch (Exception e) {
 
+            System.out.println("========== JAVA ERROR ==========");
             e.printStackTrace();
 
-            return "ERROR: " + e.getMessage();
-
+            return "ERROR : " + e.getMessage();
         }
-
     }
-
 }

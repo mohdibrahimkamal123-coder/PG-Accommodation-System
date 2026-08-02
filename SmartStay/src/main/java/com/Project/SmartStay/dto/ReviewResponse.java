@@ -10,6 +10,8 @@ public class ReviewResponse {
     private Long pgId;
     private Integer rating;
     private String comment;
+    private String pgName;
+    private String city;
     private LocalDateTime createdAt;
 
     public ReviewResponse() {
@@ -69,5 +71,20 @@ public class ReviewResponse {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+    public String getPgName() {
+        return pgName;
+    }
+
+    public void setPgName(String pgName) {
+        this.pgName = pgName;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
     }
 }

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { getAllPgs } from "../services/pgService";
+import { addToWishlist, getWishlist, removeFromWishlist } from "../services/wishlistService";
+import Swal from 'sweetalert2';
 
 // Royalty-free modern room images for PG card previews
 const ROOM_IMAGES = [
@@ -11,46 +13,6 @@ const ROOM_IMAGES = [
     "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=800&q=80",
     "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=800&q=80",
     "https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=800&q=80"
-];
-
-// Popular Indian Cities Data
-const CITIES_DATA = [
-    { name: "Bangalore", stays: "3,400+ PGs", img: "https://images.unsplash.com/photo-1596176530529-78163a4f7af2?auto=format&fit=crop&w=500&q=80" },
-    { name: "Delhi", stays: "2,800+ PGs", img: "https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=500&q=80" },
-    { name: "Gurgaon", stays: "1,900+ PGs", img: "https://images.unsplash.com/photo-1605146769289-440113cc3d00?auto=format&fit=crop&w=500&q=80" },
-    { name: "Noida", stays: "1,400+ PGs", img: "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=500&q=80" },
-    { name: "Pune", stays: "2,200+ PGs", img: "https://images.unsplash.com/photo-1567157577867-05ccb1388e66?auto=format&fit=crop&w=500&q=80" },
-    { name: "Hyderabad", stays: "2,100+ PGs", img: "https://images.unsplash.com/photo-1605379399642-870262d3d051?auto=format&fit=crop&w=500&q=80" },
-    { name: "Mumbai", stays: "2,900+ PGs", img: "https://images.unsplash.com/photo-1570168007204-dfb528c6958f?auto=format&fit=crop&w=500&q=80" },
-    { name: "Chennai", stays: "1,600+ PGs", img: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=500&q=80" }
-];
-
-// Testimonials Data
-const TESTIMONIALS_DATA = [
-    {
-        name: "Aarav Sharma",
-        role: "Software Engineer",
-        city: "Bangalore",
-        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
-        rating: 5,
-        review: "SmartStay made finding a PG in HSR Layout completely hassle-free! The room matched the photos 100%, and moving in was seamless."
-    },
-    {
-        name: "Priya Patel",
-        role: "DU Student",
-        city: "Delhi (North Campus)",
-        avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80",
-        rating: 5,
-        review: "Safety was my top priority when moving from Gujarat. SmartStay verified stays gave me and my parents total peace of mind!"
-    },
-    {
-        name: "Rohan Verma",
-        role: "Analyst at Deloitte",
-        city: "Gurgaon",
-        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
-        rating: 5,
-        review: "No broker fees and zero deposit traps. I booked my Cyber City stay in just 10 minutes directly through SmartStay!"
-    }
 ];
 
 // FAQ Data
@@ -82,7 +44,18 @@ const Home = () => {
     const [loading, setLoading] = useState(true);
     const [activeFaq, setActiveFaq] = useState(null);
     const [isLoginDropdownOpen, setIsLoginDropdownOpen] = useState(false);
+    const [wishlist, setWishlist] = useState([]);
+    
+    const user = JSON.parse(localStorage.getItem("user"));
 
+    // Load wishlist when component mounts
+    useEffect(() => {
+        if (user) {
+            loadWishlist();
+        }
+    }, [user]);
+
+    // Load PGs when component mounts
     useEffect(() => {
         loadPgs();
     }, []);
@@ -95,6 +68,105 @@ const Home = () => {
             console.error(error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const loadWishlist = async () => {
+        try {
+            const data = await getWishlist(user.userId);
+            setWishlist(data);
+        } catch (err) {
+            console.log(err);
+        }
+    };
+
+    const isWishlisted = (pgId) => {
+        return wishlist.some(item => item.pgId === pgId);
+    };
+
+    const toggleWishlist = async (pgId) => {
+        if (!user) {
+            // Cute SweetAlert for login prompt
+            const result = await Swal.fire({
+                title: '💖 Oops!',
+                text: 'You need to login first to save your favorite PGs!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#6366f1',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Login Now 🚀',
+                cancelButtonText: 'Maybe Later',
+                background: '#ffffff',
+                backdrop: 'rgba(99, 102, 241, 0.1)',
+                customClass: {
+                    popup: 'rounded-3',
+                    title: 'fw-bold',
+                    confirmButton: 'btn-gradient-primary',
+                    cancelButton: 'btn-outline-secondary'
+                }
+            });
+            
+            if (result.isConfirmed) {
+                window.location.href = '/login';
+            }
+            return;
+        }
+
+        try {
+            const existing = wishlist.find(item => item.pgId === pgId);
+            const pg = pgs.find(p => p.pgId === pgId);
+            
+            if (existing) {
+                // Remove from wishlist with cute animation
+                await removeFromWishlist(existing.wishlistId);
+                
+                Swal.fire({
+                    title: '💔 Removed!',
+                    text: `${pg?.pgName || 'PG'} removed from your wishlist`,
+                    icon: 'info',
+                    timer: 2000,
+                    timerProgressBar: true,
+                    showConfirmButton: false,
+                    background: '#ffffff',
+                    customClass: {
+                        popup: 'rounded-3'
+                    }
+                });
+            } else {
+                // Add to wishlist with cute celebration
+                await addToWishlist({
+                    userId: user.userId,
+                    pgId: pgId
+                });
+                
+                Swal.fire({
+                    title: '❤️ Added to Wishlist!',
+                    text: `${pg?.pgName || 'PG'} has been saved to your favorites ✨`,
+                    icon: 'success',
+                    timer: 2000,
+                    timerProgressBar: true,
+                    showConfirmButton: false,
+                    background: '#ffffff',
+                    customClass: {
+                        popup: 'rounded-3'
+                    }
+                });
+            }
+            
+            await loadWishlist();
+        } catch (err) {
+            console.log(err);
+            Swal.fire({
+                title: '😅 Oops!',
+                text: 'Something went wrong. Please try again!',
+                icon: 'error',
+                confirmButtonColor: '#6366f1',
+                background: '#ffffff',
+                customClass: {
+                    popup: 'rounded-3',
+                    confirmButton: 'btn-gradient-primary'
+                }
+            });
         }
     };
 
@@ -321,60 +393,8 @@ const Home = () => {
           margin-bottom: 36px !important;
         }
 
-        /* SEARCH BOX */
-        .smartstay-page-wrapper .hero-search-box {
-          background: white !important;
-          border-radius: 50px !important;
-          padding: 8px 8px 8px 24px !important;
-          box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(99, 102, 241, 0.06) !important;
-          border: 1px solid #e2e8f0 !important;
-          display: flex !important;
-          align-items: center !important;
-          gap: 12px !important;
-          max-width: 540px !important;
-          transition: all 0.3s ease !important;
-        }
-
-        .smartstay-page-wrapper .hero-search-box:focus-within {
-          border-color: #6366f1 !important;
-          box-shadow: 0 18px 40px -10px rgba(99, 102, 241, 0.2) !important;
-        }
-
-        .smartstay-page-wrapper .hero-search-input {
-          border: none !important;
-          outline: none !important;
-          width: 100% !important;
-          font-size: 0.98rem !important;
-          color: #1e293b !important;
-          font-weight: 500 !important;
-          background: transparent !important;
-          box-shadow: none !important;
-        }
-
-        .smartstay-page-wrapper .hero-search-input::placeholder {
-          color: #94a3b8 !important;
-        }
-
-        .smartstay-page-wrapper .hero-search-btn {
-          background: linear-gradient(135deg, #6366f1 0%, #7c3aed 100%) !important;
-          color: white !important;
-          border: none !important;
-          border-radius: 30px !important;
-          padding: 12px 28px !important;
-          font-weight: 700 !important;
-          font-size: 0.95rem !important;
-          display: flex !important;
-          align-items: center !important;
-          gap: 8px !important;
-          transition: all 0.2s ease !important;
-          cursor: pointer !important;
-          box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
-        }
-
-        .smartstay-page-wrapper .hero-search-btn:hover {
-          background: linear-gradient(135deg, #4f46e5 0%, #6d28d9 100%) !important;
-          transform: translateY(-1px) !important;
-        }
+       
+        
 
         /* HERO STATS */
         .smartstay-page-wrapper .hero-stats {
@@ -635,6 +655,12 @@ const Home = () => {
           background: white !important;
           color: #ef4444 !important;
           transform: scale(1.1) !important;
+        }
+
+        .smartstay-page-wrapper .fav-btn.active {
+          background: rgba(239, 68, 68, 0.9) !important;
+          color: white !important;
+          box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3) !important;
         }
 
         .smartstay-page-wrapper .card-img-overlay-bottom {
@@ -1381,9 +1407,9 @@ const Home = () => {
                             )}
                         </div>
 
-                        <a href="#" className="btn-gradient-primary">
+                        {/* <a href="#" className="btn-gradient-primary">
                             List your PG
-                        </a>
+                        </a> */}
                     </div>
                 </div>
             </nav>
@@ -1409,27 +1435,7 @@ const Home = () => {
                                 Discover verified PG accommodations for boys and girls with affordable rent, great amenities and trusted ratings.
                             </p>
 
-                            {/* Hero Search Box */}
-                            <div className="hero-search-box">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                                    <circle cx="12" cy="10" r="3" />
-                                </svg>
-                                <input
-                                    type="text"
-                                    className="hero-search-input"
-                                    placeholder="Search by city..."
-                                    readOnly
-                                />
-                                <button className="hero-search-btn" type="button">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                        <circle cx="11" cy="11" r="8" />
-                                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                                    </svg>
-                                    Search
-                                </button>
-                            </div>
-
+                          
                             {/* Hero Stats */}
                             <div className="hero-stats">
                                 <div className="stat-item">
@@ -1532,7 +1538,9 @@ const Home = () => {
                     <div className="row">
                         {pgs.length > 0 ? (
                             pgs.map((pg, index) => {
-                                const cardImg = pg.image || ROOM_IMAGES[index % ROOM_IMAGES.length];
+                                const cardImg = pg.imageUrl
+    ? `http://localhost:8080/uploads/${pg.imageUrl}`
+    : "https://via.placeholder.com/500x300?text=No+Image";
 
                                 return (
                                     <div className="col-md-4 mb-4" key={pg.pgId}>
@@ -1540,11 +1548,15 @@ const Home = () => {
 
                                             {/* Card Image Header with Overlays */}
                                             <div className="card-img-container">
-                                                <img
-                                                    src={cardImg}
-                                                    alt={pg.pgName}
-                                                    className="pg-card-img"
-                                                />
+                                               <img
+    src={cardImg}
+    alt={pg.pgName}
+    className="pg-card-img"
+    onError={(e) => {
+        e.target.src =
+            "https://via.placeholder.com/500x300?text=No+Image";
+    }}
+/>
 
                                                 <div className="card-img-overlay-top">
                                                     <div className="badge-group">
@@ -1557,11 +1569,12 @@ const Home = () => {
                                                         <span className="badge-popular">Popular</span>
                                                     </div>
 
-                                                    <button className="fav-btn" type="button" aria-label="Favorite">
-                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                                                        </svg>
-                                                    </button>
+                                                   <button
+    className={`fav-btn ${isWishlisted(pg.pgId) ? "active" : ""}`}
+    onClick={() => toggleWishlist(pg.pgId)}
+>
+    ❤️
+</button>
                                                 </div>
 
                                                 <div className="card-img-overlay-bottom">
@@ -1593,11 +1606,6 @@ const Home = () => {
                                                     <span className="text-truncate" style={{ maxWidth: "160px" }}>{pg.address}</span>
                                                 </div>
 
-                                                <div className="amenities-row">
-                                                    <span className="amenity-chip">WiFi</span>
-                                                    <span className="amenity-chip">Meals</span>
-                                                    <span className="amenity-chip">Laundry</span>
-                                                </div>
 
                                                 {/* Preserved Exact Link Component & Route */}
                                                 <Link
@@ -1696,30 +1704,6 @@ const Home = () => {
                             <p className="feature-desc">Reserve your room online with instant digital documentation and move-in support.</p>
                         </div>
                     </div>
-                </div>
-            </section>
-
-            {/* 2. SECTION: POPULAR CITIES */}
-            <section id="popular-cities" className="container">
-                <div className="section-header">
-                    <div>
-                        <h2 className="section-title">Popular Cities</h2>
-                        <p className="section-subtitle">Explore top-rated PG accommodations across major Indian tech hubs.</p>
-                    </div>
-                </div>
-
-                <div className="row gy-4">
-                    {CITIES_DATA.map((city, idx) => (
-                        <div className="col-lg-3 col-md-4 col-sm-6" key={idx}>
-                            <a href="#" className="city-card">
-                                <img src={city.img} alt={city.name} className="city-card-img" />
-                                <div className="city-card-overlay">
-                                    <h4 className="city-name">{city.name}</h4>
-                                    <span className="city-stays">{city.stays}</span>
-                                </div>
-                            </a>
-                        </div>
-                    ))}
                 </div>
             </section>
 
@@ -1861,43 +1845,6 @@ const Home = () => {
                 </div>
             </section>
 
-            {/* 6. SECTION: TESTIMONIALS */}
-            <section className="container">
-                <div className="section-header text-center d-block">
-                    <h2 className="section-title">What Our Residents Say</h2>
-                    <p className="section-subtitle">Real reviews from students and working professionals living in SmartStay PGs.</p>
-                </div>
-
-                <div className="row gy-4">
-                    {TESTIMONIALS_DATA.map((item, idx) => (
-                        <div className="col-md-4" key={idx}>
-                            <div className="testimonial-card">
-                                <div className="user-profile-row">
-                                    <img src={item.avatar} alt={item.name} className="user-avatar" />
-                                    <div>
-                                        <h6 style={{ fontWeight: 800, color: "#0f172a", margin: 0 }}>{item.name}</h6>
-                                        <small style={{ color: "#64748b" }}>{item.role} &bull; {item.city}</small>
-                                    </div>
-                                </div>
-
-                                <div style={{ color: "#f59e0b", marginBottom: "12px", fontSize: "0.9rem" }}>
-                                    {"★".repeat(item.rating)}
-                                </div>
-
-                                <p className="review-quote">"{item.review}"</p>
-
-                                <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "#10b981", display: "flex", items: "center", gap: "4px" }}>
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                                        <polyline points="20 6 9 17 4 12" />
-                                    </svg>
-                                    Verified SmartStay Resident
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </section>
-
             {/* 7. SECTION: FAQ ACCORDION */}
             <section id="faq" className="container">
                 <div className="section-header text-center d-block">
@@ -1974,7 +1921,6 @@ const Home = () => {
                             <h6 className="footer-heading">Quick Links</h6>
                             <ul className="footer-links">
                                 <li><a href="#why-choose">Why Us</a></li>
-                                <li><a href="#popular-cities">Cities</a></li>
                                 <li><a href="#how-it-works">How It Works</a></li>
                                 <li><a href="#amenities">Amenities</a></li>
                                 <li><a href="#faq">FAQs</a></li>

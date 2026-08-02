@@ -29,7 +29,13 @@ public class ReviewController {
         return reviewService.getReviewsByPg(pgId);
 
     }
+    
+    @GetMapping("/top")
+    public List<ReviewResponse> getTopReviews() {
 
+        return reviewService.getTopReviews();
+
+    }
     @GetMapping("/user/{userId}")
     public List<Review> getReviewsByUser(@PathVariable Long userId) {
         return reviewService.getReviewsByUser(userId);
