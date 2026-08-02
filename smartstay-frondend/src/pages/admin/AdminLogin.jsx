@@ -142,7 +142,7 @@ const AdminLogin = () => {
                             </span>
                             <input
                                 type="email"
-                                placeholder="admin@smartstay.com"
+                                placeholder="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 style={styles.input}
