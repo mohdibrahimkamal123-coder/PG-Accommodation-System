@@ -14,22 +14,152 @@ const OwnerRegister = () => {
         password: ""
     });
 
+    const [fieldErrors, setFieldErrors] = useState({});
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
 
+    // Enhanced validation function with field-specific errors
+    const validateField = (name, value) => {
+        let error = "";
+        
+        switch(name) {
+            case "fullName":
+                if (!value.trim()) {
+                    error = "Full name is required";
+                } else if (value.trim().length < 2) {
+                    error = "Full name must be at least 2 characters";
+                } else if (value.trim().length > 50) {
+                    error = "Full name must not exceed 50 characters";
+                } else if (!/^[a-zA-Z\s'-]+$/.test(value.trim())) {
+                    error = "Full name should only contain letters, spaces, hyphens, and apostrophes";
+                }
+                break;
+                
+            case "email":
+                if (!value.trim()) {
+                    error = "Email is required";
+                } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+                    error = "Please enter a valid email address";
+                } else if (value.length > 100) {
+                    error = "Email must not exceed 100 characters";
+                }
+                break;
+                
+            case "mobileNumber":
+                if (!value.trim()) {
+                    error = "Phone number is required";
+                } else {
+                    // Remove all non-digit characters for validation
+                    const digitsOnly = value.replace(/\D/g, '');
+                    
+                    // Check if exactly 10 digits
+                    if (digitsOnly.length !== 10) {
+                        error = "Phone number must be exactly 10 digits";
+                    } 
+                    // Check if starts with 6, 7, 8, or 9 (Indian mobile number format)
+                    else if (!/^[6-9]/.test(digitsOnly)) {
+                        error = "Phone number must start with 6, 7, 8, or 9";
+                    }
+                    // Check if all characters are valid (should be, since we removed non-digits)
+                    else if (!/^\d{10}$/.test(digitsOnly)) {
+                        error = "Phone number must contain only digits";
+                    }
+                }
+                break;
+                
+            case "password":
+                if (!value) {
+                    error = "Password is required";
+                } else if (value.length < 6) {
+                    error = "Password must be at least 6 characters";
+                } else if (value.length > 30) {
+                    error = "Password must not exceed 30 characters";
+                } else if (!/(?=.*[a-z])/.test(value)) {
+                    error = "Password must contain at least one lowercase letter";
+                } else if (!/(?=.*[A-Z])/.test(value)) {
+                    error = "Password must contain at least one uppercase letter";
+                } else if (!/(?=.*\d)/.test(value)) {
+                    error = "Password must contain at least one number";
+                } else if (!/(?=.*[@$!%*?&])/.test(value)) {
+                    error = "Password must contain at least one special character (@$!%*?&)";
+                }
+                break;
+                
+            default:
+                break;
+        }
+        
+        return error;
+    };
+
     const handleChange = (e) => {
+        const { name, value } = e.target;
+        
+        let processedValue = value;
+        
+        // For mobile number, only allow digits and format for better UX
+        if (name === "mobileNumber") {
+            // Remove all non-digit characters
+            processedValue = value.replace(/\D/g, '');
+            // Limit to 10 digits
+            if (processedValue.length > 10) {
+                processedValue = processedValue.slice(0, 10);
+            }
+        }
+        
+        // Update form data
         setFormData({
             ...formData,
-            [e.target.name]: e.target.value
+            [name]: processedValue
         });
+        
+        // Validate field on change (realtime validation)
+        const error = validateField(name, processedValue);
+        setFieldErrors({
+            ...fieldErrors,
+            [name]: error
+        });
+        
+        // Clear general error if any
+        if (error) {
+            setError("");
+        }
+    };
+
+    // Validate all fields before submission
+    const validateForm = () => {
+        const errors = {};
+        let hasError = false;
+        
+        // Validate each field
+        Object.keys(formData).forEach(key => {
+            const error = validateField(key, formData[key]);
+            if (error) {
+                errors[key] = error;
+                hasError = true;
+            }
+        });
+        
+        setFieldErrors(errors);
+        return !hasError;
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (formData.password.length < 6) {
-            setError("Password must contain at least 6 characters!");
+        // Validate all fields
+        const isValid = validateForm();
+        
+        if (!isValid) {
+            // Find first field with error and focus it
+            const firstErrorField = Object.keys(fieldErrors)[0];
+            if (firstErrorField) {
+                const element = document.querySelector(`[name="${firstErrorField}"]`);
+                if (element) {
+                    element.focus();
+                }
+            }
             return;
         }
 
@@ -38,7 +168,13 @@ const OwnerRegister = () => {
         setSuccess("");
 
         try {
-            await ownerRegister(formData);
+            // Prepare data for API - ensure mobile number is clean
+            const apiData = {
+                ...formData,
+                mobileNumber: formData.mobileNumber.replace(/\D/g, '') // Ensure clean digits
+            };
+            
+            await ownerRegister(apiData);
             setSuccess("Registration successful! Redirecting to login...");
             
             setTimeout(() => {
@@ -277,6 +413,36 @@ const OwnerRegister = () => {
             boxSizing: "border-box",
             transition: "all 0.25s ease",
         },
+        inputError: {
+            borderColor: "#dc2626",
+            background: "#fef2f2",
+        },
+        errorText: {
+            color: "#dc2626",
+            fontSize: "12px",
+            fontWeight: "600",
+            marginTop: "4px",
+        },
+        passwordStrengthContainer: {
+            marginTop: "6px",
+        },
+        passwordStrengthBar: {
+            height: "4px",
+            background: "#e2e8f0",
+            borderRadius: "2px",
+            overflow: "hidden",
+        },
+        passwordStrengthFill: {
+            height: "100%",
+            transition: "width 0.3s ease",
+        },
+        passwordStrengthLabels: {
+            display: "flex",
+            justifyContent: "space-between",
+            fontSize: "10px",
+            color: "#64748b",
+            marginTop: "4px",
+        },
         submitBtn: {
             width: "100%",
             background: "#0f172a",
@@ -294,6 +460,10 @@ const OwnerRegister = () => {
             gap: "10px",
             marginTop: "12px",
             transition: "all 0.3s ease",
+        },
+        submitBtnDisabled: {
+            opacity: 0.6,
+            cursor: "not-allowed",
         },
         footerBox: {
             textAlign: "center",
@@ -322,6 +492,33 @@ const OwnerRegister = () => {
             marginTop: "20px",
         },
     };
+
+    // Calculate password strength
+    const getPasswordStrength = (password) => {
+        if (!password) return 0;
+        let strength = 0;
+        if (password.length >= 6) strength += 1;
+        if (password.length >= 10) strength += 1;
+        if (/[a-z]/.test(password)) strength += 1;
+        if (/[A-Z]/.test(password)) strength += 1;
+        if (/\d/.test(password)) strength += 1;
+        if (/[@$!%*?&]/.test(password)) strength += 1;
+        return Math.min(strength, 5);
+    };
+
+    const getPasswordStrengthColor = (strength) => {
+        if (strength <= 1) return "#ef4444";
+        if (strength <= 3) return "#eab308";
+        return "#22c55e";
+    };
+
+    const getPasswordStrengthText = (strength) => {
+        if (strength <= 1) return "Weak";
+        if (strength <= 3) return "Medium";
+        return "Strong";
+    };
+
+    const passwordStrength = getPasswordStrength(formData.password);
 
     return (
         <div style={styles.wrapper}>
@@ -481,10 +678,16 @@ const OwnerRegister = () => {
                                 placeholder="Enter Full Name"
                                 value={formData.fullName}
                                 onChange={handleChange}
-                                style={styles.input}
+                                style={{
+                                    ...styles.input,
+                                    ...(fieldErrors.fullName && styles.inputError)
+                                }}
                                 required
                             />
                         </div>
+                        {fieldErrors.fullName && (
+                            <div style={styles.errorText}>{fieldErrors.fullName}</div>
+                        )}
                     </div>
 
                     {/* Email Field */}
@@ -503,13 +706,19 @@ const OwnerRegister = () => {
                                 placeholder="Enter Email"
                                 value={formData.email}
                                 onChange={handleChange}
-                                style={styles.input}
+                                style={{
+                                    ...styles.input,
+                                    ...(fieldErrors.email && styles.inputError)
+                                }}
                                 required
                             />
                         </div>
+                        {fieldErrors.email && (
+                            <div style={styles.errorText}>{fieldErrors.email}</div>
+                        )}
                     </div>
 
-                    {/* Phone Field */}
+                    {/* Phone Field - Updated with proper validation */}
                     <div style={styles.formGroup}>
                         <label style={styles.label}>Phone Number</label>
                         <div style={styles.inputWrapper}>
@@ -521,13 +730,30 @@ const OwnerRegister = () => {
                             <input
                                 type="text"
                                 name="mobileNumber"
-                                placeholder="Enter Phone Number"
+                                placeholder="Enter 10-digit phone number"
                                 value={formData.mobileNumber}
                                 onChange={handleChange}
-                                style={styles.input}
+                                maxLength="10"
+                                style={{
+                                    ...styles.input,
+                                    ...(fieldErrors.mobileNumber && styles.inputError)
+                                }}
                                 required
                             />
                         </div>
+                        {fieldErrors.mobileNumber && (
+                            <div style={styles.errorText}>{fieldErrors.mobileNumber}</div>
+                        )}
+                        {!fieldErrors.mobileNumber && formData.mobileNumber.length > 0 && (
+                            <div style={{ 
+                                color: '#22c55e', 
+                                fontSize: '12px', 
+                                fontWeight: '600', 
+                                marginTop: '4px' 
+                            }}>
+                                ✓ Valid phone number format
+                            </div>
+                        )}
                     </div>
 
                     {/* Password Field */}
@@ -546,16 +772,45 @@ const OwnerRegister = () => {
                                 placeholder="Enter Password (Min 6 chars)"
                                 value={formData.password}
                                 onChange={handleChange}
-                                style={styles.input}
+                                style={{
+                                    ...styles.input,
+                                    ...(fieldErrors.password && styles.inputError)
+                                }}
                                 required
                             />
                         </div>
+                        {fieldErrors.password && (
+                            <div style={styles.errorText}>{fieldErrors.password}</div>
+                        )}
+                        
+                        {/* Password strength indicator */}
+                        {formData.password && !fieldErrors.password && (
+                            <div style={styles.passwordStrengthContainer}>
+                                <div style={styles.passwordStrengthBar}>
+                                    <div style={{
+                                        ...styles.passwordStrengthFill,
+                                        width: `${(passwordStrength / 5) * 100}%`,
+                                        background: getPasswordStrengthColor(passwordStrength)
+                                    }} />
+                                </div>
+                                <div style={styles.passwordStrengthLabels}>
+                                    <span>Weak</span>
+                                    <span style={{ fontWeight: '600', color: getPasswordStrengthColor(passwordStrength) }}>
+                                        {getPasswordStrengthText(passwordStrength)}
+                                    </span>
+                                    <span>Strong</span>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Submit Button */}
                     <button
                         type="submit"
-                        style={styles.submitBtn}
+                        style={{
+                            ...styles.submitBtn,
+                            ...(loading && styles.submitBtnDisabled)
+                        }}
                         disabled={loading}
                     >
                         {loading ? (

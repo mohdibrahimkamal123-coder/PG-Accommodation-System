@@ -580,8 +580,10 @@ const Wishlist = () => {
           </div>
         ) : (
           <div className="wishlist-grid">
+            
             {filteredWishlist.map((item) => (
               <div className="wishlist-card" key={item.wishlistId}>
+                
                 <div className="wishlist-card-image">
                   🏠
                   <div className="heart-badge">❤️</div>

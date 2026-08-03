@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import UserLayout from "../components/UserLayout";
 import Swal from "sweetalert2";
 import { getAllPgs, searchPgs } from "../services/pgService";
-import { addToWishlist } from "../services/wishlistService";
+import { addToWishlist, getWishlist, removeFromWishlist } from "../services/wishlistService";
 
 const FindPG = () => {
   const [pgs, setPgs] = useState([]);
@@ -15,12 +15,12 @@ const FindPG = () => {
   const [searchLoading, setSearchLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [wishlist, setWishlist] = useState([]);
 
   const [budget, setBudget] = useState("");
   const [gender, setGender] = useState("");
   
   const searchInputRef = useRef(null);
-  const debounceTimerRef = useRef(null);
 
   const user = useMemo(() => {
     try {
@@ -30,9 +30,90 @@ const FindPG = () => {
     }
   }, []);
 
+  // Load wishlist when user is available
+  useEffect(() => {
+    if (user && user.userId) {
+      loadWishlist();
+    }
+  }, [user]);
+
   useEffect(() => {
     loadAllPgs();
   }, []);
+
+  const loadWishlist = async () => {
+    try {
+      if (user && user.userId) {
+        const data = await getWishlist(user.userId);
+        setWishlist(data);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const isWishlisted = (pgId) => {
+    return Array.isArray(wishlist) && wishlist.some(item => item.pgId === pgId);
+  };
+
+  const toggleWishlist = async (pgId, pgName) => {
+    if (!user) {
+      const result = await Swal.fire({
+        title: '💖 Oops!',
+        text: 'You need to login first to save your favorite PGs!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#6366f1',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Login Now 🚀',
+        cancelButtonText: 'Maybe Later',
+      });
+
+      if (result.isConfirmed) {
+        window.location.href = '/login';
+      }
+      return;
+    }
+
+    try {
+      const existing = Array.isArray(wishlist) ? wishlist.find(item => item.pgId === pgId) : null;
+
+      if (existing) {
+        await removeFromWishlist(existing.wishlistId);
+        Swal.fire({
+          title: '💔 Removed!',
+          text: `${pgName || 'PG'} removed from your wishlist`,
+          icon: 'info',
+          timer: 2000,
+          timerProgressBar: true,
+          showConfirmButton: false,
+        });
+      } else {
+        await addToWishlist({
+          userId: user.userId,
+          pgId: pgId
+        });
+        Swal.fire({
+          title: '❤️ Added to Wishlist!',
+          text: `${pgName || 'PG'} has been saved to your favorites ✨`,
+          icon: 'success',
+          timer: 2000,
+          timerProgressBar: true,
+          showConfirmButton: false,
+        });
+      }
+
+      await loadWishlist();
+    } catch (err) {
+      console.log(err);
+      Swal.fire({
+        title: '😅 Oops!',
+        text: 'Something went wrong. Please try again!',
+        icon: 'error',
+        confirmButtonColor: '#6366f1',
+      });
+    }
+  };
 
   const filterPgs = useCallback(() => {
     let filtered = [...pgs];
@@ -108,47 +189,6 @@ const FindPG = () => {
       }
     } finally {
       setSearchLoading(false);
-    }
-  };
-
-  const handleWishlist = async (pgId, pgName) => {
-    if (!user) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Login Required',
-        text: 'Please login to add to wishlist',
-        confirmButtonColor: '#6366f1',
-        showCancelButton: true,
-        cancelButtonText: 'Cancel',
-        confirmButtonText: 'Login Now',
-      }).then((result) => {
-        if (result.isConfirmed) {
-          window.location.href = '/login';
-        }
-      });
-      return;
-    }
-
-    try {
-      await addToWishlist({
-        userId: user.userId,
-        pgId: pgId
-      });
-      Swal.fire({
-        icon: 'success',
-        title: 'Added!',
-        text: `${pgName} added to wishlist ❤️`,
-        confirmButtonColor: '#6366f1',
-        timer: 2000,
-        timerProgressBar: true,
-      });
-    } catch (error) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Oops...',
-        text: error.response?.data?.message || 'PG is already in your wishlist.',
-        confirmButtonColor: '#6366f1',
-      });
     }
   };
 
@@ -500,6 +540,169 @@ const FindPG = () => {
       font-weight: 500;
     }
 
+    /* Card Image Styles */
+    .card-img-container {
+      position: relative;
+      height: 200px;
+      overflow: hidden;
+      border-radius: 16px 16px 0 0;
+      margin: -24px -24px 16px -24px;
+      background: #e2e8f0;
+    }
+
+    .pg-card-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+
+    .pg-card:hover .pg-card-img {
+      transform: scale(1.05);
+    }
+
+    .card-img-overlay-top {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 2;
+    }
+
+    .badge-verified {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(8px);
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .badge-popular {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin-left: 6px;
+    }
+
+    .fav-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(8px);
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .fav-btn:hover {
+      transform: scale(1.1);
+      background: white;
+    }
+
+    .fav-btn.active {
+      background: #fef2f2;
+      color: #ef4444;
+    }
+
+    .card-img-overlay-bottom {
+      position: absolute;
+      bottom: 12px;
+      left: 12px;
+      right: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 2;
+    }
+
+    .rent-tag {
+      background: linear-gradient(135deg, #6366f1 0%, #7c3aed 100%);
+      color: white;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+    }
+
+    .pg-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .pg-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 0;
+    }
+
+    .location-info {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      color: #64748b;
+      margin-bottom: 12px;
+    }
+
+    .location-city {
+      color: #0f172a;
+      font-weight: 600;
+    }
+
+    .btn-card-action {
+      background: linear-gradient(135deg, #6366f1 0%, #7c3aed 100%) !important;
+      color: white !important;
+      border: none !important;
+      border-radius: 14px !important;
+      padding: 12px !important;
+      font-weight: 700 !important;
+      font-size: 0.95rem !important;
+      text-align: center !important;
+      transition: all 0.3s ease !important;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.25) !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 8px !important;
+      text-decoration: none !important;
+      margin-top: auto !important;
+    }
+
+    .btn-card-action:hover {
+      background: linear-gradient(135deg, #4f46e5 0%, #6d28d9 100%) !important;
+      box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4) !important;
+      transform: translateY(-2px) !important;
+      color: white !important;
+    }
+
+    .card-body-custom {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+    }
+
     @media (max-width: 768px) {
       .findpg-content {
         padding: 16px;
@@ -520,6 +723,11 @@ const FindPG = () => {
 
       .pg-card {
         padding: 18px;
+      }
+
+      .card-img-container {
+        height: 160px;
+        margin: -18px -18px 12px -18px;
       }
     }
   `;
@@ -728,83 +936,98 @@ const FindPG = () => {
                 {filteredPgs.map((pg) => (
                   <div className="col-md-4" key={pg.pgId}>
                     <div className="pg-card">
-                      {/* Header */}
-                      <div className="d-flex justify-content-between align-items-start mb-2">
-                        <h3 className="pg-card-title">
-                          {searchTerm ? 
-                            highlightMatch(pg.pgName, searchTerm) : 
-                            pg.pgName
-                          }
-                        </h3>
-                        <span className="rating-badge">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="#ca8a04">
-                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                          </svg>
-                          {pg.rating?.toFixed(1) || '4.5'}
-                        </span>
-                      </div>
-
-                      {/* Location */}
-                      <p className="text-muted small mb-2 d-flex align-items-center gap-1">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2.5">
-                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                          <circle cx="12" cy="10" r="3" />
-                        </svg>
-                        <span>
-                          {searchTerm ? highlightMatch(pg.city, searchTerm) : pg.city}
-                          {pg.state ? `, ${searchTerm ? highlightMatch(pg.state, searchTerm) : pg.state}` : ''}
-                        </span>
-                      </p>
-
-                      {/* Price */}
-                      <div className="price-tag">
-                        ₹{pg.rentStarting?.toLocaleString() || "N/A"}
-                        <span className="text-muted fw-normal small"> / month</span>
-                      </div>
-
-                      {/* Gender */}
-                      {pg.genderType && (
-                        <div className="mb-3">
-                          <span className="gender-badge">
-                            👥 {pg.genderType}
+                      {/* Image */}
+                      <div className="card-img-container">
+                        <img
+                          src={pg.imageUrl ? `http://localhost:8080/uploads/${pg.imageUrl}` : "https://via.placeholder.com/500x300?text=No+Image"}
+                          alt={pg.pgName}
+                          className="pg-card-img"
+                          onError={(e) => {
+                            e.target.src = "https://via.placeholder.com/500x300?text=No+Image";
+                          }}
+                        />
+                        <div className="card-img-overlay-top">
+                          <div>
+                            <span className="badge-verified">
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                              Verified
+                            </span>
+                            <span className="badge-popular">Popular</span>
+                          </div>
+                          <button
+                            className={`fav-btn ${isWishlisted(pg.pgId) ? 'active' : ''}`}
+                            onClick={() => toggleWishlist(pg.pgId, pg.pgName)}
+                          >
+                            ❤️
+                          </button>
+                        </div>
+                        <div className="card-img-overlay-bottom">
+                          <span className="rating-badge">
+                            ⭐ {pg.rating?.toFixed(1) || '4.5'}
+                          </span>
+                          <span className="rent-tag">
+                            ₹{pg.rentStarting} <span style={{ fontSize: "0.7rem", fontWeight: 500 }}>/mo</span>
                           </span>
                         </div>
-                      )}
-
-                      {/* Amenities */}
-                      <div className="d-flex gap-2 flex-wrap mb-4">
-                        {pg.foodAvailable && (
-                          <span className="amenity-chip chip-food">🍽️ Food</span>
-                        )}
-                        {pg.wifiAvailable && (
-                          <span className="amenity-chip chip-wifi">📶 WiFi</span>
-                        )}
-                        {pg.laundryAvailable && (
-                          <span className="amenity-chip chip-laundry">👕 Laundry</span>
-                        )}
                       </div>
 
-                      {/* Actions */}
-                      <div className="mt-auto d-flex flex-column gap-2">
-                        <button
-                          className="btn-wishlist"
-                          onClick={() => handleWishlist(pg.pgId, pg.pgName)}
-                        >
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                      {/* Body */}
+                      <div className="card-body-custom">
+                        <div className="pg-header-row">
+                          <h5 className="pg-title">
+                            {searchTerm ? highlightMatch(pg.pgName, searchTerm) : pg.pgName}
+                          </h5>
+                          <span className="gender-badge">{pg.genderType || "Unisex"}</span>
+                        </div>
+
+                        <div className="location-info">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2.5">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                            <circle cx="12" cy="10" r="3" />
                           </svg>
-                          Add to Wishlist
-                        </button>
-                        <Link
-                          to={`/pg/${pg.pgId}`}
-                          className="btn-primary-premium"
-                        >
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                            <circle cx="12" cy="12" r="3" />
-                          </svg>
-                          View Details
-                        </Link>
+                          <span className="location-city">
+                            {searchTerm ? highlightMatch(pg.city, searchTerm) : pg.city}
+                          </span>
+                          <span>&bull;</span>
+                          <span className="text-truncate" style={{ maxWidth: "140px" }}>
+                            {pg.address}
+                          </span>
+                        </div>
+
+                        {/* Amenities */}
+                        <div className="d-flex gap-2 flex-wrap mb-3">
+                          {pg.foodAvailable && (
+                            <span className="amenity-chip chip-food">🍽️ Food</span>
+                          )}
+                          {pg.wifiAvailable && (
+                            <span className="amenity-chip chip-wifi">📶 WiFi</span>
+                          )}
+                          {pg.laundryAvailable && (
+                            <span className="amenity-chip chip-laundry">👕 Laundry</span>
+                          )}
+                        </div>
+
+                        {/* Actions */}
+                        <div className="mt-auto d-flex flex-column gap-2">
+                          <button
+                            className="btn-wishlist"
+                            onClick={() => toggleWishlist(pg.pgId, pg.pgName)}
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                            </svg>
+                            {isWishlisted(pg.pgId) ? '❤️ Saved' : 'Add to Wishlist'}
+                          </button>
+                          <Link to={`/pg/${pg.pgId}`} className="btn-primary-premium">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                              <circle cx="12" cy="12" r="3" />
+                            </svg>
+                            View Details
+                          </Link>
+                        </div>
                       </div>
                     </div>
                   </div>

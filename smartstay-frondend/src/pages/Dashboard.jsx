@@ -574,38 +574,7 @@ const Dashboard = () => {
                     </div>
                 </div>
 
-                {/* Current Booking */}
-                <div className="booking-card">
-                    <div className="booking-card-header">
-                        <h5>🏠 Current Booking</h5>
-                    </div>
-                    <div className="booking-card-body">
-                        {activeBooking ? (
-                            <div>
-                                <h4 style={{ fontWeight: 700, color: '#0f172a' }}>{activeBooking.pgName}</h4>
-                                <hr />
-                                <div className="row">
-                                    <div className="col-md-6">
-                                        <p><strong>Booking ID:</strong> {activeBooking.bookingId}</p>
-                                        <p><strong>Room:</strong> {activeBooking.roomId || "Standard"}</p>
-                                        <p><strong>Status:</strong> {activeBooking.status}</p>
-                                    </div>
-                                    <div className="col-md-6">
-                                        <p><strong>Booking Date:</strong> {activeBooking.bookingDate}</p>
-                                        <p><strong>Rent:</strong> ₹{activeBooking.rent}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="booking-empty">
-                                <h4>No Active Booking</h4>
-                                <Link to="/find-pg" className="btn-create-scenario" style={{ display: 'inline-flex' }}>
-                                    Find PG
-                                </Link>
-                            </div>
-                        )}
-                    </div>
-                </div>
+               
 
                 {/* Recent Bookings Table */}
                 <div className="table-card">
@@ -620,7 +589,7 @@ const Dashboard = () => {
                             <table className="premium-table">
                                 <thead>
                                     <tr>
-                                        <th>Booking ID</th>
+                                        <th>Booking Number</th>
                                         <th>PG</th>
                                         {/* <th>Room</th> */}
                                         <th>Status</th>
@@ -630,7 +599,7 @@ const Dashboard = () => {
                                 <tbody>
                                     {bookings.slice(0, 5).map((b) => (
                                         <tr key={b.bookingId}>
-                                            <td className="booking-id">#{b.bookingId}</td>
+                                            <td className="booking-id">#{b.bookingNumber}</td>
                                             <td className="booking-pg">{b.pgName}</td>
                                             {/* <td>{b.roomId || "Standard"}</td> */}
                                             <td>
